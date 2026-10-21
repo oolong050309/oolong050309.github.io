@@ -1,0 +1,61 @@
+---
+import Icon from '../components/Icon.astro';
+import { site } from '../config/site';
+import { getPosts } from '../lib/content';
+import '../styles/global.css';
+
+interface Props { title?: string; description?: string; article?: boolean; }
+const { title = site.title, description = site.description, article = false } = Astro.props;
+const pathname = Astro.url.pathname;
+const canonicalURL = Astro.site ? new URL(pathname, Astro.site) : undefined;
+const navigation = [
+  { title: '文章', href: '/blog/' },
+  { title: '作品', href: '/projects/' },
+  { title: '此刻', href: '/now/' },
+  { title: '关于', href: '/about/' },
+];
+const searchPosts = getPosts().map(({ title, description, category, topic, tags, href }) => ({ title, description, category, topic, tags, href }));
+---
+<!doctype html>
+<html lang={site.language}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#ffffff" />
+    <meta name="robots" content={import.meta.env.DEV ? 'noindex, nofollow' : 'index, follow'} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${site.name} 的文章`} href="/rss.xml" />
+    <title>{title}</title>
+    <script is:inline>
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.dataset.motion = 'paused';
+    </script>
+  </head>
+  <body id="top">
+    <div class="reading-progress" data-reading-progress aria-hidden="true"></div>
+    <a class="skip-link" href="#main">跳到正文</a>
+    <div class="page-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="Pip，返回首页" aria-current={pathname === '/' ? 'page' : undefined}>{site.name}<span aria-hidden="true">.</span></a>
+        <nav class="main-nav" aria-label="主导航">
+          {navigation.map(item => <a href={item.href} aria-current={pathname === item.href ? 'page' : pathname.startsWith(item.href) ? 'location' : undefined}>{item.title}</a>)}
+          <button class="icon-button" type="button" data-search-open aria-label="搜索文章"><Icon name="search" size={18} /></button>
+        </nav>
+      </header>
+      <main id="main" class:list={['main-content', { 'article-content': article }]}><slot /></main>
+      <footer class="site-footer" data-reveal>
+        <p>© {new Date().getFullYear()} {site.name}</p>
+        <div><a href="/rss.xml">RSS <span aria-hidden="true">↗</span></a><a href="#top">回到顶部 <span aria-hidden="true">↑</span></a></div>
+      </footer>
+    </div>
+    <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
+      <div class="search-dialog-header"><h2 id="search-title">搜索文章</h2><button class="icon-button" type="button" data-close-search aria-label="关闭搜索"><Icon name="close" /></button></div>
+      <label class="search-field"><span class="sr-only">搜索关键词</span><Icon name="search" size={18} /><input id="search-input" type="search" placeholder="输入关键词…" autocomplete="off" /></label>
+      <div id="search-results" aria-live="polite"></div>
+      <p class="dialog-footnote"><kbd>Esc</kbd> 关闭</p>
+    </dialog>
+    <script id="search-data" type="application/json" set:html={JSON.stringify(searchPosts).replace(/</g, '\\u003c')} />
+    <script src="../scripts/interactions.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { now } from '../../config/now';
+const currentActivities = now.items.filter(item => !item.pending);
+---
+<BaseLayout title="此刻 · Pip" description="Pip 最近正在做的事情和接下来的计划。">
+  <PageHeader title="此刻" description={now.intro}>
+    <span>更新于 <time datetime={now.updatedAt}>{now.updatedAt.replaceAll('-', '.')}</time></span>
+  </PageHeader>
+  <div class="page-body">
+    <section class="content-block" aria-labelledby="now-focus-title" data-reveal>
+      <h2 id="now-focus-title">最近的重心</h2>
+      <dl class="now-list">{currentActivities.map(item => <div class="now-item"><dt>{item.label}</dt><dd>{item.text}</dd></div>)}</dl>
+    </section>
+    <section class="content-block" aria-labelledby="now-next-title" data-reveal>
+      <h2 id="now-next-title">接下来</h2>
+      <ul class="simple-list">{now.nextSteps.map(step => <li>{step}</li>)}</ul>
+    </section>
+    <div class="page-actions"><a class="section-more" href="/projects/">看看正在做的项目 <span aria-hidden="true">↗</span></a><a class="section-more" href="/blog/">读一些文章 <span aria-hidden="true">↗</span></a></div>
+  </div>
+</BaseLayout>

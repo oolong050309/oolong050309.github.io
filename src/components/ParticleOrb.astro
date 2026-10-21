@@ -1,0 +1,26 @@
+<div class="hero-visual" data-orb-stage>
+  <button class="orb-trigger" data-orb-trigger type="button" aria-label="释放粒子脉冲" disabled>
+    <svg class="orb-fallback" viewBox="0 0 320 320" fill="none" aria-hidden="true">
+      <circle cx="160" cy="160" r="110" stroke="#aaa" stroke-width=".6" />
+      <ellipse cx="160" cy="160" rx="110" ry="40" stroke="#888" stroke-width=".6" />
+      <ellipse cx="160" cy="160" rx="110" ry="75" stroke="#aaa" stroke-width=".6" />
+      <ellipse cx="160" cy="160" rx="42" ry="110" stroke="#888" stroke-width=".6" />
+      <ellipse cx="160" cy="160" rx="78" ry="110" stroke="#aaa" stroke-width=".6" />
+      <ellipse cx="160" cy="160" rx="145" ry="61" transform="rotate(-28 160 160)" stroke="#666" stroke-width=".7" stroke-dasharray="2 6" />
+      <circle cx="226" cy="70" r="3" fill="#222" /><circle cx="65" cy="215" r="2.5" fill="#222" />
+    </svg>
+    <canvas class="orb-canvas" data-orb-canvas width="640" height="640" aria-hidden="true"></canvas>
+  </button>
+</div>
+<script src="../scripts/particle-orb.ts"></script>
+
+<style>
+  .hero-visual { width: 320px; position: relative; }
+  .orb-trigger { display: block; width: 320px; height: 320px; position: relative; padding: 0; border-radius: 50%; cursor: crosshair; }
+  .orb-trigger:disabled { cursor: default; }
+  .orb-trigger:focus-visible { outline-offset: -6px; border-radius: 50%; }
+  .orb-canvas, .orb-fallback { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .orb-canvas { opacity: 0; }
+  .is-live .orb-canvas { opacity: 1; }
+  .is-live .orb-fallback { opacity: 0; }
+</style>

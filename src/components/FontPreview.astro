@@ -1,0 +1,42 @@
+---
+const options = [
+  { id: 'A', name: '当前系统字体', family: 'var(--sans)' },
+  { id: 'B', name: '等线', family: "'Segoe UI', DengXian, '等线', 'Microsoft YaHei', sans-serif" },
+  { id: 'C', name: '宋体', family: "Georgia, SimSun, '宋体', serif" },
+  { id: 'D', name: '华文中宋', family: "Georgia, STZhongsong, '华文中宋', SimSun, '宋体', serif" },
+  { id: 'E', name: '楷体', family: "Georgia, KaiTi, '楷体', STKaiti, '华文楷体', serif" },
+  { id: 'F', name: '仿宋', family: "'Times New Roman', FangSong, '仿宋', STFangsong, '华文仿宋', serif" },
+];
+const sample = '图像由像素组成。卷积核在局部区域里移动，把数字转化为特征。理解每一步的输入与输出，比记住网络名称更有用。';
+---
+<section class="font-preview" aria-labelledby="font-preview">
+  <h2 id="font-preview">字体试读</h2>
+  <p class="font-preview-intro">六组字体使用相同的样文、18px 正文和 2 倍行距。可以先比较中文、英文和数字，再告诉我喜欢的编号。</p>
+  <div class="font-preview-grid">
+    {options.map(option => (
+      <section class="font-preview-option" aria-label={`${option.id} · ${option.name}`}>
+        <p class="font-preview-label">{option.id} <span aria-hidden="true">/</span> {option.name}</p>
+        <div class="font-preview-sample" style={{ fontFamily: option.family }}>
+          <p class="font-preview-title">卷积如何提取特征</p>
+          <p>{sample}</p>
+          <p class="font-preview-latin" lang="en">Convolution · Feature maps · 32 × 32</p>
+        </div>
+      </section>
+    ))}
+  </div>
+  <p class="font-preview-note">这里展示本机字体；其他设备若未安装相应字体，会使用后备字体。数学公式继续使用专用数学字体。</p>
+</section>
+
+<style>
+  .font-preview { margin-bottom: 42px; padding-bottom: 30px; border-bottom: 1px solid var(--line); }
+  .font-preview > h2 { margin-top: 0; }
+  .font-preview-intro { margin-top: 12px; color: var(--muted); font-size: 16px; line-height: 1.9; }
+  .font-preview-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; row-gap: 28px; margin-top: 26px; }
+  .font-preview-option { min-width: 0; padding-top: 15px; border-top: 1px solid var(--line); }
+  .font-preview-label { margin-bottom: 16px; font: 14px/1.8 var(--sans); font-weight: 500; color: var(--muted); }
+  .font-preview-label span { margin-inline: 6px; color: #aaa; }
+  .font-preview-sample { font-size: 18px; line-height: 2; font-weight: 400; }
+  .font-preview-title { margin-bottom: 12px; font-size: 23px; font-weight: 600; line-height: 1.6; }
+  .font-preview-latin { margin-top: 12px; }
+  .font-preview-note { margin-top: 25px; color: var(--muted); font-size: 14px; line-height: 1.9; }
+</style>

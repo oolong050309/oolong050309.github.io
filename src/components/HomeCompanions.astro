@@ -1,0 +1,47 @@
+---
+---
+<div class="home-companions" data-home-companions>
+  <button class="blob-companion" data-blob-companion type="button" draggable="false" aria-label="小黑团 Pip：点击弹跳，也可以拖动" title="戳戳 Pip，也可以把它拎起来">
+    <span class="blob-shape" data-blob-shape>
+      <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true">
+        <ellipse cx="28" cy="49" rx="17" ry="2" fill="#000" opacity=".07" />
+        <path d="M7 34C6 20 12 9 26 9c16-1 24 10 23 25-1 11-8 14-21 14S8 45 7 34Z" fill="#222" />
+        <g class="blob-eyes">
+          <ellipse cx="21" cy="27" rx="4.4" ry="5.2" fill="#fff" /><ellipse cx="35" cy="27" rx="4.4" ry="5.2" fill="#fff" />
+          <g data-blob-gaze><circle cx="21" cy="27" r="1.8" fill="#222" /><circle cx="35" cy="27" r="1.8" fill="#222" /></g>
+        </g>
+        <path class="blob-smile" d="M25 36q3 3 6 0" fill="none" stroke="#fff" stroke-width="1.2" stroke-linecap="round" />
+      </svg>
+    </span>
+  </button>
+  <button class="paper-plane" data-paper-plane type="button" aria-label="小纸飞机：点击让它飞到另一边" title="点一下，飞一小段">
+    <span class="paper-shape"><svg width="48" height="48" viewBox="0 0 56 56" aria-hidden="true">
+      <path d="M5 24 49 7 33 47 24 31 5 24Z" fill="#fff" stroke="#333" stroke-width="1.5" stroke-linejoin="round" />
+      <path d="m24 31 25-24M24 31v10l6-5" fill="none" stroke="#333" stroke-width="1.3" stroke-linejoin="round" />
+      <path d="m24 31 6 5-6 5Z" fill="#333" />
+    </svg></span>
+  </button>
+</div>
+<script src="../scripts/companions.ts"></script>
+
+<style>
+  .home-companions { position: fixed; inset: 0; z-index: 30; pointer-events: none; visibility: hidden; }
+  .home-companions.is-positioned { visibility: visible; }
+  .blob-companion, .paper-plane { position: absolute; top: 0; left: 0; margin: 0; padding: 0; border: 0; background: none; pointer-events: auto; user-select: none; -webkit-user-select: none; }
+  .blob-companion { width: 56px; height: 56px; cursor: grab; touch-action: none; transform: translate3d(28px, calc(100dvh - 80px), 0); }
+  .blob-companion.is-dragging { cursor: grabbing; }
+  .blob-shape { display: block; width: 56px; height: 56px; transform-origin: center 85%; transition: transform 180ms ease-out; }
+  .blob-companion:hover .blob-shape { transform: translateY(-2px) scale(1.035, .97); }
+  .blob-companion.is-dragging .blob-shape { transform: scale(.86, 1.15) rotate(var(--blob-tilt, -5deg)); }
+  .blob-eyes { transform-box: fill-box; transform-origin: center; }
+  .blob-smile { opacity: 0; transition: opacity 150ms; }
+  .blob-companion:hover .blob-smile, .blob-companion.is-dragging .blob-smile, .blob-companion.is-curious .blob-smile { opacity: 1; }
+  .blob-companion.is-curious .blob-eyes { transform: scaleY(.75); }
+  .paper-plane { width: 48px; height: 48px; cursor: pointer; transform: translate3d(calc(100vw - 104px), 180px, 0); }
+  .paper-shape { display: block; width: 48px; height: 48px; transition: transform 200ms ease-out; }
+  .paper-plane:not(.is-flying):hover .paper-shape { transform: translateY(-3px) rotate(-7deg); }
+  .blob-companion:focus-visible, .paper-plane:focus-visible { outline: 1px dashed #777; outline-offset: 4px; border-radius: 10px; }
+  @keyframes blob-blink { 0%, 91%, 96%, 100% { transform: scaleY(1); } 93%, 94% { transform: scaleY(.08); } }
+  @media (prefers-reduced-motion: no-preference) { .blob-eyes { animation: blob-blink 8s linear infinite; } }
+  .home-companions.is-hidden .blob-eyes { animation-play-state: paused; }
+</style>

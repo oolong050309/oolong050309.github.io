@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ProjectList from '../../components/ProjectList.astro';
+---
+<BaseLayout title="作品 · Pip" description="Pip 亲手做过的项目与实验，记录想法、实现过程和成果。">
+  <PageHeader title="作品" description="把想法做出来，在实践中理解它。" />
+  <section class="projects-archive" aria-label="项目列表"><ProjectList detailed /></section>
+  <p class="page-closing-note">先从这个网站开始，更多作品慢慢积累。</p>
+</BaseLayout>

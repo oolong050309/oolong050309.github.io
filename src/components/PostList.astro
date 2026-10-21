@@ -1,0 +1,20 @@
+---
+import { formatDate, type getPosts } from '../lib/content';
+interface Props { posts: ReturnType<typeof getPosts>; detailed?: boolean; }
+const { posts, detailed = false } = Astro.props;
+---
+<div class:list={['post-list', { 'is-detailed': detailed }]}>
+  {posts.map((post, index) => (
+    <article class="post-item" data-reveal data-reveal-delay={Math.min(index * 40, 160)}>
+      <a class="post-link" href={post.href}>
+        <div class="post-summary">
+          <h3>{post.title}</h3>
+          {detailed && <p class="post-description">{post.description}</p>}
+          <span class="post-topic">{post.category} / {post.topic}{detailed && ` · ${post.minutes} 分钟阅读`}{post.sample && ' · 示例文章'}</span>
+        </div>
+        <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+        <span class="post-open" aria-hidden="true">↗</span>
+      </a>
+    </article>
+  ))}
+</div>

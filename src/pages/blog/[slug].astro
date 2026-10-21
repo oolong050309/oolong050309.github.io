@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import { getPosts, formatDate } from '../../lib/content';
+import { site } from '../../config/site';
+import { categoryHref } from '../../config/categories';
+import FontPreview from '../../components/FontPreview.astro';
+import 'katex/dist/katex.min.css';
+
+export function getStaticPaths() {
+  return getPosts().map(post => ({ params: { slug: post.slug }, props: { post } }));
+}
+type Props = { post: ReturnType<typeof getPosts>[number] };
+const { post } = Astro.props;
+const { Content } = post;
+const showFontPreview = post.slug === 'cnn-explained' && post.sample;
+const headings = [
+  ...(showFontPreview ? [{ depth: 2, slug: 'font-preview', text: '字体试读' }] : []),
+  ...post.headings,
+].filter(heading => heading.depth <= 3);
+---
+<BaseLayout title={`${post.title} · ${site.name}`} description={post.description} article>
+  <a class="article-back" href="/blog/"><Icon name="arrow" size={16} />回到所有文章</a>
+  <header class="article-header">
+    <span class="eyebrow"><a class="article-category-link" href={categoryHref(post.category)}>{post.category}</a> / {post.topic}</span>
+    <h1>{post.title}</h1>
+    <p class="article-description">{post.description}</p>
+    <div class="article-meta"><time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time><span>约 {post.minutes} 分钟阅读</span>{post.sample && <span class="sample-label">用于预览排版的示例文章</span>}</div>
+    <ul class="article-tags" aria-label="文章标签">{post.tags.map(tag => <li>{tag}</li>)}</ul>
+  </header>
+  <div class="article-layout">
+    <article class="prose">{showFontPreview && <FontPreview />}<Content /></article>
+    <nav class="article-toc" aria-label="文章目录"><h2>目录</h2>{headings.map(heading => <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>{heading.text}</a>)}</nav>
+  </div>
+  <div class="article-end"><a href="/blog/">回到文章列表 <Icon name="arrow" size={16} /></a></div>
+</BaseLayout>
