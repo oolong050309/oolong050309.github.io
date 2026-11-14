@@ -20,7 +20,7 @@ const currentActivities = now.items.filter(item => !item.pending);
       <h1 id="hero-title">Hi, I'm <span class="hero-name"><span class="sr-only">Pip</span><span data-scramble aria-hidden="true">Pip</span></span><span class="hero-period">.</span></h1>
       <p class="hero-description">保持好奇，把复杂的东西讲简单。</p>
       <p class="hero-note">这里记录计算机知识、动手做的小东西，<br />以及生活里的新想法。</p>
-      <a class="hero-read-link" href={pageHref('/blog/')}>{posts.length ? '从一篇文章开始' : '浏览文章分类'} <span aria-hidden="true">↗</span></a>
+      <a class="hero-read-link" href={pageHref('/blog/')}>浏览文章 <span aria-hidden="true">↗</span></a>
     </div>
     <ParticleOrb />
   </section>
