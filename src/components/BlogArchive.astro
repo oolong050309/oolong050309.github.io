@@ -11,7 +11,7 @@ const selected = articleCategories.find(item => item.slug === category);
 const allPosts = getPosts();
 const posts = selected ? allPosts.filter(post => post.category === selected.label) : allPosts;
 const title = selected?.label || '文章';
-const description = selected?.description || '从基础知识到开发实践、研究笔记，也记录阅读与生活里的想法。';
+const description = selected?.description || '学习笔记、CS336 课程记录、开发实践与研究笔记，也有阅读和生活里的想法。';
 ---
 <BaseLayout title={`${title} · Pip`} description={description}>
   <PageHeader title={title} description={description}>
@@ -19,6 +19,6 @@ const description = selected?.description || '从基础知识到开发实践、�
   </PageHeader>
   <CategoryNav selected={category || 'all'} posts={allPosts} />
   <section class="archive-section has-categories" aria-label={selected ? `${selected.label}文章` : '全部文章'}>
-    {posts.length > 0 ? <PostList posts={posts} detailed /> : <div class="category-empty"><h2>还没有公开的{title}</h2><p>{selected?.description || '第一篇文章发布后，会出现在这里。'}</p><a class="section-more" href="/blog/">先读其他文章 <span aria-hidden="true">↗</span></a></div>}
+    {posts.length > 0 ? <PostList posts={posts} detailed /> : <div class="category-empty"><h2>这里还没有公开的文章</h2><p>{selected?.description || '第一篇文章发布后，会出现在这里。'}</p><a class="section-more" href="/blog/">先读其他文章 <span aria-hidden="true">↗</span></a></div>}
   </section>
 </BaseLayout>
