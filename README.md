@@ -72,7 +72,7 @@ GitHub Pages 的 HTML 响应有约 10 分钟缓存，部署后可能出现某个
 ## 修改内容
 
 - 个人名称与站点描述：`src/config/site.ts`。
-- 「此刻」的更新日期和近况：`src/config/now.ts`，在学与在读暂留待填写。
+- 「此刻」的更新日期、在做／在学／在玩近况和接下来计划：`src/config/now.ts`，首页与此刻页面共用这些内容。
 - 作品列表：`src/config/projects.ts`；关于介绍：`src/config/about.ts`。
 - 首页：`src/pages/index.astro`。
 - Markdown 文章：`src/content/blog/`。
