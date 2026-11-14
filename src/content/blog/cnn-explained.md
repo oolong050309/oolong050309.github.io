@@ -3,7 +3,7 @@ title: "CNN 入门：从像素到图像分类"
 slug: "cnn-explained"
 description: "卷积核如何从图像里提取特征？用一个手算例子、两张黑白图解和一段 PyTorch 代码，理解 CNN 的基本工作方式。"
 publishedAt: "2026-10-20T10:00:00+08:00"
-category: "研究笔记"
+category: "基础知识"
 topic: "深度学习"
 tags: ["CNN", "计算机视觉", "PyTorch"]
 minutes: 10

@@ -11,7 +11,7 @@ const selected = articleCategories.find(item => item.slug === category);
 const allPosts = getPosts();
 const posts = selected ? allPosts.filter(post => post.category === selected.label) : allPosts;
 const title = selected?.label || '文章';
-const description = selected?.description || '深度学习的研究笔记、开发实践，以及学习和生活记录。';
+const description = selected?.description || '从基础知识到开发实践、研究笔记，也记录阅读与生活里的想法。';
 ---
 <BaseLayout title={`${title} · Pip`} description={description}>
   <PageHeader title={title} description={description}>

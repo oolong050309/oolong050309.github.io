@@ -3,7 +3,7 @@ title: "输入一个网址之后，究竟发生了什么？"
 slug: "what-happens-after-a-url"
 description: "从敲下回车到看到网页，跟着一次小小的请求，逛一圈互联网。"
 publishedAt: "2026-10-18T10:00:00+08:00"
-category: "开发实践"
+category: "基础知识"
 topic: "计算机网络"
 tags: ["计算机基础", "DNS", "HTTP"]
 minutes: 4

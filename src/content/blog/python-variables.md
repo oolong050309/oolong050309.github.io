@@ -3,7 +3,7 @@ title: "Python 里的变量，到底装的是什么？"
 slug: "python-variables"
 description: "变量更像一个名字，而不是装东西的盒子。用几个小例子，把引用关系捋清楚。"
 publishedAt: "2026-10-15T10:00:00+08:00"
-category: "开发实践"
+category: "基础知识"
 topic: "Python"
 tags: ["引用", "可变对象"]
 minutes: 3
