@@ -4,6 +4,12 @@ import { projects } from '../config/projects';
 interface Props { detailed?: boolean; }
 const { detailed = false } = Astro.props;
 ---
+{projects.length === 0 ? (
+  <div class:list={['projects-empty', { 'is-detailed': detailed }]}>
+    {detailed && <h2>这里还没有公开的作品</h2>}
+    <p>作品正在整理中，敬请期待。</p>
+  </div>
+) : (
 <div class:list={['project-list', { 'is-detailed': detailed }]}>
   {projects.map(project => (
     <a class="project-link" href={pageHref(project.href)} data-reveal>
@@ -16,3 +22,12 @@ const { detailed = false } = Astro.props;
     </a>
   ))}
 </div>
+)}
+
+<style>
+  .projects-empty { padding: 32px 0; }
+  .projects-empty.is-detailed { padding: 58px 0; }
+  .projects-empty h2 { font-size: 23px; }
+  .projects-empty p { color: var(--muted); font-size: 17px; }
+  .projects-empty h2 + p { margin-top: 14px; }
+</style>
