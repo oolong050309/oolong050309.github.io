@@ -50,6 +50,7 @@ npm run check:build
 - 文章搜索，支持 Ctrl / Cmd + K 和 `/` 快捷键。
 - 六篇原创示例 Markdown 文章，正文目录与代码复制。CNN 入门文章位于 `/blog/cnn-explained/`，包含原创黑白图解、公式、尺寸表和 PyTorch 结构示例。
 - RSS 订阅输出，文章链接使用正式域名。
+- 文章底部提供 giscus 评论与点赞／表情反应，读者使用 GitHub 账号参与。
 
 现有文章、日期和阅读时长用于展示排版，已按 sample 标记显示示例说明；正式文章设为 sample: false。当前没有专门制作手机端布局。旧版小电脑组件保留在源码中，当前页面不使用。
 
@@ -68,8 +69,21 @@ npm run check:build
 - 首页两侧字符场：`src/components/SideAtmosphere.astro`、`src/scripts/side-atmosphere.ts` 与 `src/lib/ascii.ts`。
 - 统一动效偏好：`src/scripts/motion.ts`。
 - 导航与页脚：`src/layouts/BaseLayout.astro`。
+- 评论区：`src/components/Comments.astro`；仓库与讨论分类：`src/config/comments.ts`。
 
 当前示例文章仍带有示例标记；替换为正式文章时将 frontmatter 中的 `sample` 改为 `false`。
+
+## 评论与点赞
+
+文章使用 [giscus](https://giscus.app/zh-CN)，评论和文章反应保存在 `oolong050309/oolong050309.github.io` 仓库的 GitHub Discussions 中。网站仍为静态生成，无需新增服务器、数据库或网站账号系统。
+
+仓库需要保持公开、启用 Discussions，并为当前仓库安装 [giscus GitHub App](https://github.com/apps/giscus)。配置放在 `src/config/comments.ts`，包含公开的仓库 ID 和 Announcements 讨论分类 ID，不需要访问令牌。
+
+每篇文章以 `pathname` 严格匹配自己的讨论，文章标题修改不影响评论；已发布文章应保持 slug 稳定。第一次有人留言或发送反应时，giscus 自动创建对应讨论，不必预先为每篇文章开帖。管理员可在仓库 Discussions 中管理评论。
+
+评论组件只出现在文章详情页，使用中文、浅色主题和懒加载，包含文章反应与回复输入框。禁用脚本或加载失败时，页面保留 GitHub 讨论区入口。开发和生产环境的同一路径共用评论；`giscus:backlink` 始终指向正式文章网址，避免在讨论中留下 localhost 链接。本地验证时不要提交测试评论或点赞，以免写入真实讨论。
+
+使用官方 `giscus` Web Component，由 Astro 将客户端代码随网站打包，避免额外请求远程 `client.js`；评论内容和登录仍由 giscus 与 GitHub 提供。
 
 ## 文章分类与标签
 

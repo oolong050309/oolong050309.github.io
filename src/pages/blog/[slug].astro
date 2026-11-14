@@ -5,6 +5,7 @@ import { getPosts, formatDate } from '../../lib/content';
 import { site } from '../../config/site';
 import { categoryHref } from '../../config/categories';
 import FontPreview from '../../components/FontPreview.astro';
+import Comments from '../../components/Comments.astro';
 import 'katex/dist/katex.min.css';
 
 export function getStaticPaths() {
@@ -32,5 +33,6 @@ const headings = [
     <article class="prose">{showFontPreview && <FontPreview />}<Content /></article>
     <nav class="article-toc" aria-label="文章目录"><h2>目录</h2>{headings.map(heading => <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>{heading.text}</a>)}</nav>
   </div>
+  <Comments />
   <div class="article-end"><a href="/blog/">回到文章列表 <Icon name="arrow" size={16} /></a></div>
 </BaseLayout>

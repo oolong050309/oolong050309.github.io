@@ -1,0 +1,39 @@
+---
+import { comments } from '../config/comments';
+
+const discussionsURL = `https://github.com/${comments.repo}/discussions`;
+---
+<section class="article-comments" id="comments" aria-labelledby="comments-title">
+  <h2 id="comments-title">交流与反馈</h2>
+  <p class="comments-intro">登录 GitHub 即可留言，也可以用点赞或表情告诉我你的想法。</p>
+  <giscus-widget
+    id="giscus-comments"
+    repo={comments.repo}
+    repoid={comments.repoId}
+    category={comments.category}
+    categoryid={comments.categoryId}
+    mapping="pathname"
+    strict="1"
+    reactionsenabled="1"
+    emitmetadata="0"
+    inputposition="top"
+    theme="light"
+    lang="zh-CN"
+    loading="lazy"
+  ></giscus-widget>
+  <noscript><p class="comments-note">启用 JavaScript 后可在这里查看评论和点赞。</p></noscript>
+  <p class="comments-note">评论区没有加载？<a href={discussionsURL} target="_blank" rel="noopener noreferrer">前往 GitHub 讨论区 <span aria-hidden="true">↗</span></a></p>
+</section>
+
+<script>
+  import 'giscus';
+</script>
+
+<style>
+  .article-comments { max-width: 720px; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--line); }
+  .comments-intro { margin: 12px 0 24px; color: var(--muted); font-size: 15px; line-height: 1.9; }
+  giscus-widget { display: block; min-height: 160px; }
+  .comments-note { margin-top: 18px; color: var(--muted); font-size: 13px; line-height: 1.8; }
+  .comments-note a { text-decoration: underline; text-underline-offset: 4px; }
+  .comments-note a:hover { color: var(--text); }
+</style>
