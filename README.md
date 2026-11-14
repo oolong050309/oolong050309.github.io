@@ -6,7 +6,7 @@
 
 ## 本地开发
 
-当前锁定 Astro 7.4.1，需要 Node.js 22.22.0 及以上的兼容版本，建议使用 Node.js 24。
+当前锁定 Astro 7.4.1，包含站点地图依赖在内需要 Node.js 22.22.1 及以上的兼容版本，建议使用 Node.js 24。
 
 ```sh
 npm ci
@@ -29,6 +29,17 @@ npm run check:build
 仓库的 Settings → Pages → Source 使用 GitHub Actions。部署环境为 `github-pages`，Node.js 24，静态产物目录为 `dist/`。`node_modules/`、`dist/`、`.astro/` 和本地环境文件不会提交到仓库。
 
 正式域名配置在 `astro.config.mjs` 的 `site`；RSS 和 canonical 链接使用这一地址。生产构建允许搜索引擎收录，本地开发保留 noindex。修改文章或样式后提交并推送即可更新，不需要手动上传 `dist/`。
+
+## 自动站点地图
+
+通过 Astro 官方 `@astrojs/sitemap` 集成，在每次 `npm run build` 时根据实际生成的页面自动更新站点地图。新增或删除文章、分类和其他页面后，推送到 `main` 触发部署，清单会随网站一起更新，无需手动维护网址列表。
+
+- 站点地图入口：[sitemap-index.xml](https://oolong050309.github.io/sitemap-index.xml)。
+- 页面清单：`sitemap-0.xml`；页面较多时，集成会自动拆分成多个文件。
+- `public/robots.txt` 与生产页面的 `<head>` 均声明站点地图入口；修改正式域名时，也需同步更新 `robots.txt` 中的地址。
+- `npm run check:build` 会校验站点地图覆盖全部实际页面、没有重复或失效网址，并检查 `robots.txt` 的声明。此检查同样在 GitHub Actions 部署前执行。
+
+站点地图仅在生产构建中生成，可用 `npm run build` 后的 `npm run preview` 本地查看。向 Google Search Console 或 Bing Webmaster Tools 提交时，使用上面的站点地图入口；生成并发布站点地图不等于已在这些平台提交，也不保证收录或排名。
 
 ## 当前范围
 

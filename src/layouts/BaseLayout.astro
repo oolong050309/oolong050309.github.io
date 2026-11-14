@@ -25,6 +25,7 @@ const searchPosts = getPosts().map(({ title, description, category, topic, tags,
     <meta name="theme-color" content="#ffffff" />
     <meta name="robots" content={import.meta.env.DEV ? 'noindex, nofollow' : 'index, follow'} />
     <link rel="canonical" href={canonicalURL} />
+    {!import.meta.env.DEV && <link rel="sitemap" href="/sitemap-index.xml" />}
     {article && canonicalURL && <meta name="giscus:backlink" content={canonicalURL} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title={`${site.name} 的文章`} href="/rss.xml" />

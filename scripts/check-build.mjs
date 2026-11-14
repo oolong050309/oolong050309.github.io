@@ -64,5 +64,25 @@ for (const href of feedLinks) {
   assert.equal(target.origin, origin, 'RSS must use the published domain');
   assert.ok(pages.has(target.pathname), `RSS links to a missing page: ${href}`);
 }
-assert.ok((await readFile(path.join(output, 'robots.txt'), 'utf8')).includes('Allow: /'));
-console.log(`PASS: ${pages.size} production pages, ${links} local resources/anchors, ${commentPages} article comment widgets, canonical URLs, RSS links and crawler access.`);
+const sitemapIndex = await readFile(path.join(output, 'sitemap-index.xml'), 'utf8');
+assert.match(sitemapIndex, /<sitemapindex\b/, 'missing sitemap index');
+const sitemapFiles = [...sitemapIndex.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+assert.ok(sitemapFiles.length > 0, 'sitemap index must contain a sitemap');
+const sitemapURLs = new Set();
+for (const href of sitemapFiles) {
+  const target = new URL(href);
+  assert.equal(target.origin, origin, 'sitemap index must use the published domain');
+  const sitemap = await readFile(path.join(output, decodeURIComponent(target.pathname)), 'utf8');
+  assert.match(sitemap, /<urlset\b/, `invalid sitemap: ${href}`);
+  for (const match of sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)) {
+    const pageURL = match[1].replaceAll('&amp;', '&');
+    assert.ok(!sitemapURLs.has(pageURL), `duplicate sitemap URL: ${pageURL}`);
+    sitemapURLs.add(pageURL);
+  }
+}
+const expectedURLs = [...pages.keys()].map(route => new URL(route, origin).href);
+assert.deepEqual([...sitemapURLs].sort(), expectedURLs.sort(), 'sitemap must include exactly the published pages');
+const robots = await readFile(path.join(output, 'robots.txt'), 'utf8');
+assert.ok(robots.includes('Allow: /'));
+assert.ok(robots.split(/\r?\n/).includes(`Sitemap: ${origin}/sitemap-index.xml`), 'robots.txt must advertise the sitemap');
+console.log(`PASS: ${pages.size} production pages, ${links} local resources/anchors, ${commentPages} article comment widgets, ${sitemapURLs.size} sitemap URLs, canonical URLs, RSS links and crawler access.`);
