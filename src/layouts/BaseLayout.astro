@@ -14,7 +14,7 @@ const navigation = [
   { title: '此刻', href: '/now/' },
   { title: '关于', href: '/about/' },
 ];
-const searchPosts = getPosts().map(({ title, description, category, topic, tags, href }) => ({ title, description, category, topic, tags, href }));
+const searchPosts = getPosts().map(({ title, description, category, subcategory, topic, tags, href }) => ({ title, description, category, subcategory, topic, tags, href }));
 ---
 <!doctype html>
 <html lang={site.language}>

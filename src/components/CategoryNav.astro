@@ -1,13 +1,13 @@
 ---
 import { articleCategories, type CategorySlug } from '../config/categories';
 import type { getPosts } from '../lib/content';
-interface Props { selected: CategorySlug | 'all'; posts: ReturnType<typeof getPosts>; }
-const { selected, posts } = Astro.props;
+interface Props { selected: CategorySlug | 'all'; posts: ReturnType<typeof getPosts>; withinCategory?: boolean; }
+const { selected, posts, withinCategory = false } = Astro.props;
 const filters = [
   { slug: 'all', label: '全部', href: '/blog/', count: posts.length },
   ...articleCategories.map(category => ({ ...category, href: `/blog/category/${category.slug}/`, count: posts.filter(post => post.category === category.label).length })),
 ];
 ---
 <nav class="category-nav" aria-label="文章分类">
-  {filters.map(filter => <a class="category-link" href={filter.href} aria-current={selected === filter.slug ? 'page' : undefined}><span>{filter.label}</span><span class="category-count">{filter.count}<span class="sr-only"> 篇文章</span></span></a>)}
+  {filters.map(filter => <a class="category-link" href={filter.href} aria-current={selected === filter.slug ? (withinCategory ? 'location' : 'page') : undefined}><span>{filter.label}</span><span class="category-count">{filter.count}<span class="sr-only"> 篇文章</span></span></a>)}
 </nav>

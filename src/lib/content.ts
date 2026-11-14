@@ -1,5 +1,5 @@
 import type { MarkdownInstance } from 'astro';
-import type { PostCategory } from '../config/categories';
+import { articleCategories, articleSubcategories, type PostCategory, type PostSubcategory } from '../config/categories';
 
 export interface PostMeta {
   title: string;
@@ -7,6 +7,7 @@ export interface PostMeta {
   description: string;
   publishedAt: string;
   category: PostCategory;
+  subcategory?: PostSubcategory;
   topic: string;
   tags?: string[];
   minutes: number;
@@ -17,13 +18,24 @@ const files = import.meta.glob<MarkdownInstance<PostMeta>>('../content/blog/*.md
 
 export function getPosts() {
   return Object.values(files)
-    .map((file) => ({
-      ...file.frontmatter,
-      tags: [...new Set([file.frontmatter.topic, ...(Array.isArray(file.frontmatter.tags) ? file.frontmatter.tags : [])].filter(tag => typeof tag === 'string' && tag.trim()))],
-      href: `/blog/${file.frontmatter.slug}/`,
-      Content: file.Content,
-      headings: file.getHeadings(),
-    }))
+    .map((file) => {
+      const post = file.frontmatter;
+      const category = articleCategories.find(item => item.label === post.category);
+      if (!category) throw new Error(`Unknown category in article: ${post.slug}`);
+      if (post.subcategory) {
+        const subcategory = articleSubcategories.find(item => item.label === post.subcategory);
+        if (!subcategory || subcategory.parent !== category.slug) {
+          throw new Error(`Subcategory does not belong to category in article: ${post.slug}`);
+        }
+      }
+      return {
+        ...post,
+        tags: [...new Set([post.topic, ...(Array.isArray(post.tags) ? post.tags : [])].filter(tag => typeof tag === 'string' && tag.trim()))],
+        href: `/blog/${post.slug}/`,
+        Content: file.Content,
+        headings: file.getHeadings(),
+      };
+    })
     .sort((a, b) => new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf());
 }
 

@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
 import { getPosts, formatDate } from '../../lib/content';
 import { site } from '../../config/site';
-import { categoryHref } from '../../config/categories';
+import { categoryHref, subcategoryHref } from '../../config/categories';
 import FontPreview from '../../components/FontPreview.astro';
 import Comments from '../../components/Comments.astro';
 import 'katex/dist/katex.min.css';
@@ -23,7 +23,7 @@ const headings = [
 <BaseLayout title={`${post.title} · ${site.name}`} description={post.description} article>
   <a class="article-back" href="/blog/"><Icon name="arrow" size={16} />回到所有文章</a>
   <header class="article-header">
-    <span class="eyebrow"><a class="article-category-link" href={categoryHref(post.category)}>{post.category}</a> / {post.topic}</span>
+    <span class="eyebrow"><a class="article-category-link" href={categoryHref(post.category)}>{post.category}</a>{post.subcategory && <> / <a class="article-category-link" href={subcategoryHref(post.subcategory)}>{post.subcategory}</a></>} / {post.topic}</span>
     <h1>{post.title}</h1>
     <p class="article-description">{post.description}</p>
     <div class="article-meta"><time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time><span>约 {post.minutes} 分钟阅读</span>{post.sample && <span class="sample-label">用于预览排版的示例文章</span>}</div>

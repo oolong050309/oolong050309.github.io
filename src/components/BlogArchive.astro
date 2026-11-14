@@ -3,22 +3,25 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from './PageHeader.astro';
 import PostList from './PostList.astro';
 import CategoryNav from './CategoryNav.astro';
-import { articleCategories, type CategorySlug } from '../config/categories';
+import SubcategoryNav from './SubcategoryNav.astro';
+import { articleCategories, articleSubcategories, type CategorySlug, type SubcategorySlug } from '../config/categories';
 import { getPosts } from '../lib/content';
-interface Props { category?: CategorySlug; }
-const { category } = Astro.props;
+interface Props { category?: CategorySlug; subcategory?: SubcategorySlug; }
+const { category, subcategory } = Astro.props;
 const selected = articleCategories.find(item => item.slug === category);
+const selectedSubcategory = articleSubcategories.find(item => item.slug === subcategory && item.parent === category);
 const allPosts = getPosts();
-const posts = selected ? allPosts.filter(post => post.category === selected.label) : allPosts;
-const title = selected?.label || '文章';
-const description = selected?.description || '学习笔记、CS336 课程记录、开发实践与研究笔记，也有阅读和生活里的想法。';
+const posts = allPosts.filter(post => (!selected || post.category === selected.label) && (!selectedSubcategory || post.subcategory === selectedSubcategory.label));
+const title = selectedSubcategory?.label || selected?.label || '文章';
+const description = selectedSubcategory?.description || selected?.description || '学习笔记、开发实践与研究笔记，也有阅读和生活里的想法。';
 ---
-<BaseLayout title={`${title} · Pip`} description={description}>
+<BaseLayout title={`${title}${selectedSubcategory ? ` · ${selected?.label}` : ''} · Pip`} description={description}>
   <PageHeader title={title} description={description}>
     <span>{selected ? '这个分类' : '全部'}共 {posts.length} 篇文章</span><a href="/rss.xml">RSS 订阅 <span aria-hidden="true">↗</span></a>
   </PageHeader>
-  <CategoryNav selected={category || 'all'} posts={allPosts} />
-  <section class="archive-section has-categories" aria-label={selected ? `${selected.label}文章` : '全部文章'}>
-    {posts.length > 0 ? <PostList posts={posts} detailed /> : <div class="category-empty"><h2>这里还没有公开的文章</h2><p>{selected?.description || '第一篇文章发布后，会出现在这里。'}</p><a class="section-more" href="/blog/">先读其他文章 <span aria-hidden="true">↗</span></a></div>}
+  <CategoryNav selected={category || 'all'} posts={allPosts} withinCategory={!!selectedSubcategory} />
+  {category && <SubcategoryNav category={category} selected={selectedSubcategory?.slug} posts={allPosts} />}
+  <section class="archive-section has-categories" aria-label={selected ? `${title}文章` : '全部文章'}>
+    {posts.length > 0 ? <PostList posts={posts} detailed /> : <div class="category-empty"><h2>这里还没有公开的文章</h2><p>{description}</p><a class="section-more" href="/blog/">先读其他文章 <span aria-hidden="true">↗</span></a></div>}
   </section>
 </BaseLayout>

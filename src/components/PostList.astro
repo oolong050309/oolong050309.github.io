@@ -10,7 +10,7 @@ const { posts, detailed = false } = Astro.props;
         <div class="post-summary">
           <h3>{post.title}</h3>
           {detailed && <p class="post-description">{post.description}</p>}
-          <span class="post-topic">{post.category} / {post.topic}{detailed && ` · ${post.minutes} 分钟阅读`}{post.sample && ' · 示例文章'}</span>
+          <span class="post-topic">{[post.category, post.subcategory, post.topic].filter(Boolean).join(' / ')}{detailed && ` · ${post.minutes} 分钟阅读`}{post.sample && ' · 示例文章'}</span>
         </div>
         <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
         <span class="post-open" aria-hidden="true">↗</span>

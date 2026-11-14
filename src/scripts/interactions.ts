@@ -22,7 +22,7 @@ function renderSearch(query = '') {
     link.className = 'search-result';
     const topic = document.createElement('span');
     topic.className = 'search-result-category';
-    topic.textContent = `${post.category} / ${post.topic}`;
+    topic.textContent = [post.category, post.subcategory, post.topic].filter(Boolean).join(' / ');
     const title = document.createElement('strong');
     title.textContent = post.title;
     link.append(topic, title);

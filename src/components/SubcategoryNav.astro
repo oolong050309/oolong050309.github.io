@@ -1,0 +1,24 @@
+---
+import { articleCategories, articleSubcategories, categoryHref, subcategoryHref, type CategorySlug, type SubcategorySlug } from '../config/categories';
+import type { getPosts } from '../lib/content';
+interface Props { category: CategorySlug; selected?: SubcategorySlug; posts: ReturnType<typeof getPosts>; }
+const { category, selected, posts } = Astro.props;
+const parent = articleCategories.find(item => item.slug === category);
+const children = articleSubcategories.filter(item => item.parent === category);
+const parentPosts = posts.filter(post => post.category === parent?.label);
+---
+{parent && children.length > 0 && (
+  <nav class="subcategory-nav" aria-label={`${parent.label}子分类`}>
+    <span class="subcategory-label">{parent.label} /</span>
+    <a href={categoryHref(parent.label)} aria-current={!selected ? 'page' : undefined}>全部笔记 <span class="category-count">{parentPosts.length}<span class="sr-only"> 篇文章</span></span></a>
+    {children.map(child => <a href={subcategoryHref(child.label)} aria-current={selected === child.slug ? 'page' : undefined}>{child.label} <span class="category-count">{parentPosts.filter(post => post.subcategory === child.label).length}<span class="sr-only"> 篇文章</span></span></a>)}
+  </nav>
+)}
+
+<style>
+  .subcategory-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; padding: 20px 0; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  .subcategory-label { font-size: 13px; }
+  .subcategory-nav a { display: inline-flex; align-items: baseline; gap: 8px; padding: 3px 0; }
+  .subcategory-nav a:hover { color: var(--text); }
+  .subcategory-nav a[aria-current] { color: var(--text); font-weight: 600; text-decoration: underline; text-underline-offset: 7px; }
+</style>
