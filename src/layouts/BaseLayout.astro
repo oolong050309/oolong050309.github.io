@@ -1,4 +1,5 @@
 ---
+import { pageHref, siteRevision } from '../lib/navigation';
 import Icon from '../components/Icon.astro';
 import { site } from '../config/site';
 import { getPosts } from '../lib/content';
@@ -14,7 +15,7 @@ const navigation = [
   { title: '此刻', href: '/now/' },
   { title: '关于', href: '/about/' },
 ];
-const searchPosts = getPosts().map(({ title, description, category, subcategory, topic, tags, href }) => ({ title, description, category, subcategory, topic, tags, href }));
+const searchPosts = getPosts().map(({ title, description, category, subcategory, topic, tags, href }) => ({ title, description, category, subcategory, topic, tags, href: pageHref(href) }));
 ---
 <!doctype html>
 <html lang={site.language}>
@@ -23,6 +24,7 @@ const searchPosts = getPosts().map(({ title, description, category, subcategory,
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#ffffff" />
+    {siteRevision && <meta name="site-revision" content={siteRevision} />}
     <meta name="robots" content={import.meta.env.DEV ? 'noindex, nofollow' : 'index, follow'} />
     <link rel="canonical" href={canonicalURL} />
     {!import.meta.env.DEV && <link rel="sitemap" href="/sitemap-index.xml" />}
@@ -39,9 +41,9 @@ const searchPosts = getPosts().map(({ title, description, category, subcategory,
     <a class="skip-link" href="#main">跳到正文</a>
     <div class="page-shell">
       <header class="site-header">
-        <a class="brand" href="/" aria-label="Pip，返回首页" aria-current={pathname === '/' ? 'page' : undefined}>{site.name}<span aria-hidden="true">.</span></a>
+        <a class="brand" href={pageHref('/')} aria-label="Pip，返回首页" aria-current={pathname === '/' ? 'page' : undefined}>{site.name}<span aria-hidden="true">.</span></a>
         <nav class="main-nav" aria-label="主导航">
-          {navigation.map(item => <a href={item.href} aria-current={pathname === item.href ? 'page' : pathname.startsWith(item.href) ? 'location' : undefined}>{item.title}</a>)}
+          {navigation.map(item => <a href={pageHref(item.href)} aria-current={pathname === item.href ? 'page' : pathname.startsWith(item.href) ? 'location' : undefined}>{item.title}</a>)}
           <button class="icon-button" type="button" data-search-open aria-label="搜索文章"><Icon name="search" size={18} /></button>
         </nav>
       </header>

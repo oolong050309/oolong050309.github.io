@@ -1,4 +1,5 @@
 ---
+import { pageHref } from '../../lib/navigation';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import { now } from '../../config/now';
@@ -17,6 +18,6 @@ const currentActivities = now.items.filter(item => !item.pending);
       <h2 id="now-next-title">接下来</h2>
       <ul class="simple-list">{now.nextSteps.map(step => <li>{step}</li>)}</ul>
     </section>
-    <div class="page-actions"><a class="section-more" href="/projects/">看看正在做的项目 <span aria-hidden="true">↗</span></a><a class="section-more" href="/blog/">读一些文章 <span aria-hidden="true">↗</span></a></div>
+    <div class="page-actions"><a class="section-more" href={pageHref('/projects/')}>看看正在做的项目 <span aria-hidden="true">↗</span></a><a class="section-more" href={pageHref('/blog/')}>读一些文章 <span aria-hidden="true">↗</span></a></div>
   </div>
 </BaseLayout>

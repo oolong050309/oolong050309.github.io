@@ -30,6 +30,10 @@ npm run check:build
 
 正式域名配置在 `astro.config.mjs` 的 `site`；RSS 和 canonical 链接使用这一地址。生产构建允许搜索引擎收录，本地开发保留 noindex。修改文章或样式后提交并推送即可更新，不需要手动上传 `dist/`。
 
+GitHub Pages 的 HTML 响应有约 10 分钟缓存，部署后可能出现某个分类已更新、另一个分类仍显示旧内容的情况。部署工作流会将提交 SHA 注入 `PUBLIC_SITE_REVISION`；站内导航、分类、文章入口和搜索结果通过 `src/lib/navigation.ts` 自动携带同一版本参数，避免从新页面跳入另一份旧缓存。canonical、RSS、站点地图和 giscus 的 pathname 保持原始地址。已有的旧标签页需要刷新一次才能使用新版导航；这个机制不会远程清除浏览器已缓存的旧页面。
+
+本地验证部署版本行为可运行 `PUBLIC_SITE_REVISION=local-check npm run build`，再运行 `PUBLIC_SITE_REVISION=local-check npm run check:build`。不设置该变量时，本地链接保持简洁地址。构建检查会核对导航和搜索结果的版本一致性。
+
 ## 自动站点地图
 
 通过 Astro 官方 `@astrojs/sitemap` 集成，在每次 `npm run build` 时根据实际生成的页面自动更新站点地图。新增或删除文章、分类和其他页面后，推送到 `main` 触发部署，清单会随网站一起更新，无需手动维护网址列表。

@@ -1,4 +1,5 @@
 ---
+import { pageHref } from '../lib/navigation';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HomeCompanions from '../components/HomeCompanions.astro';
 import ParticleOrb from '../components/ParticleOrb.astro';
@@ -19,18 +20,18 @@ const currentActivities = now.items.filter(item => !item.pending);
       <h1 id="hero-title">Hi, I'm <span class="hero-name"><span class="sr-only">Pip</span><span data-scramble aria-hidden="true">Pip</span></span><span class="hero-period">.</span></h1>
       <p class="hero-description">保持好奇，把复杂的东西讲简单。</p>
       <p class="hero-note">这里记录计算机知识、动手做的小东西，<br />以及生活里的新想法。</p>
-      <a class="hero-read-link" href="/blog/">{posts.length ? '从一篇文章开始' : '浏览文章分类'} <span aria-hidden="true">↗</span></a>
+      <a class="hero-read-link" href={pageHref('/blog/')}>{posts.length ? '从一篇文章开始' : '浏览文章分类'} <span aria-hidden="true">↗</span></a>
     </div>
     <ParticleOrb />
   </section>
 
   <section class="writing-section" id="writing" aria-labelledby="writing-title">
-    <div class="section-heading" data-reveal><h2 id="writing-title">最近的文章</h2><a class="section-more" href="/blog/">全部文章 <span aria-hidden="true">↗</span></a></div>
+    <div class="section-heading" data-reveal><h2 id="writing-title">最近的文章</h2><a class="section-more" href={pageHref('/blog/')}>全部文章 <span aria-hidden="true">↗</span></a></div>
     {posts.length > 0 ? <PostList posts={posts} /> : <p class="posts-empty">文章正在整理中，敬请期待。</p>}
   </section>
 
   <section class="projects-section" id="projects" aria-labelledby="projects-title">
-    <div class="section-heading" data-reveal><h2 id="projects-title">作品与实验</h2><a class="section-more" href="/projects/">全部作品 <span aria-hidden="true">↗</span></a></div>
+    <div class="section-heading" data-reveal><h2 id="projects-title">作品与实验</h2><a class="section-more" href={pageHref('/projects/')}>全部作品 <span aria-hidden="true">↗</span></a></div>
     <ProjectList />
   </section>
 
@@ -39,11 +40,11 @@ const currentActivities = now.items.filter(item => !item.pending);
     <dl class="now-list">
       {currentActivities.map(item => <div class="now-item" data-reveal><dt>{item.label}</dt><dd>{item.text}</dd></div>)}
     </dl>
-    <a class="section-follow-link" href="/now/">更多近况 <span aria-hidden="true">↗</span></a>
+    <a class="section-follow-link" href={pageHref('/now/')}>更多近况 <span aria-hidden="true">↗</span></a>
   </section>
 
   <section class="about-section" id="about" aria-labelledby="about-title" data-reveal>
     <h2 id="about-title">关于我</h2>
-    <div><p>{about.intro}</p><a class="about-rss" href="/about/">认识 Pip <span aria-hidden="true">↗</span></a></div>
+    <div><p>{about.intro}</p><a class="about-rss" href={pageHref('/about/')}>认识 Pip <span aria-hidden="true">↗</span></a></div>
   </section>
 </BaseLayout>

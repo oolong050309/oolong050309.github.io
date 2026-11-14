@@ -1,4 +1,5 @@
 ---
+import { pageHref } from '../lib/navigation';
 import { formatDate, type getPosts } from '../lib/content';
 interface Props { posts: ReturnType<typeof getPosts>; detailed?: boolean; }
 const { posts, detailed = false } = Astro.props;
@@ -6,7 +7,7 @@ const { posts, detailed = false } = Astro.props;
 <div class:list={['post-list', { 'is-detailed': detailed }]}>
   {posts.map((post, index) => (
     <article class="post-item" data-reveal data-reveal-delay={Math.min(index * 40, 160)}>
-      <a class="post-link" href={post.href}>
+      <a class="post-link" href={pageHref(post.href)}>
         <div class="post-summary">
           <h3>{post.title}</h3>
           {detailed && <p class="post-description">{post.description}</p>}

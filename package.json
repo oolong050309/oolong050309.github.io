@@ -7,7 +7,7 @@
     "node": ">=22.22.1"
   },
   "scripts": {
-    "test": "node --test tests/companions.test.mjs tests/ascii.test.mjs",
+    "test": "node --test tests/*.test.mjs",
     "dev": "astro dev --host 127.0.0.1 --port 4321",
     "check": "astro check",
     "check:build": "node scripts/check-build.mjs",

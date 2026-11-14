@@ -1,4 +1,5 @@
 ---
+import { pageHref } from '../../lib/navigation';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
 import { getPosts, formatDate } from '../../lib/content';
@@ -16,9 +17,9 @@ const { Content } = post;
 const headings = post.headings.filter(heading => heading.depth <= 3);
 ---
 <BaseLayout title={`${post.title} · ${site.name}`} description={post.description} article>
-  <a class="article-back" href="/blog/"><Icon name="arrow" size={16} />回到所有文章</a>
+  <a class="article-back" href={pageHref('/blog/')}><Icon name="arrow" size={16} />回到所有文章</a>
   <header class="article-header">
-    <span class="eyebrow"><a class="article-category-link" href={categoryHref(post.category)}>{post.category}</a>{post.subcategory && <> / <a class="article-category-link" href={subcategoryHref(post.subcategory)}>{post.subcategory}</a></>} / {post.topic}</span>
+    <span class="eyebrow"><a class="article-category-link" href={pageHref(categoryHref(post.category))}>{post.category}</a>{post.subcategory && <> / <a class="article-category-link" href={pageHref(subcategoryHref(post.subcategory))}>{post.subcategory}</a></>} / {post.topic}</span>
     <h1>{post.title}</h1>
     <p class="article-description">{post.description}</p>
     <div class="article-meta"><time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time><span>约 {post.minutes} 分钟阅读</span>{post.sample && <span class="sample-label">用于预览排版的示例文章</span>}</div>
@@ -29,5 +30,5 @@ const headings = post.headings.filter(heading => heading.depth <= 3);
     <nav class="article-toc" aria-label="文章目录"><h2>目录</h2>{headings.map(heading => <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>{heading.text}</a>)}</nav>
   </div>
   <Comments />
-  <div class="article-end"><a href="/blog/">回到文章列表 <Icon name="arrow" size={16} /></a></div>
+  <div class="article-end"><a href={pageHref('/blog/')}>回到文章列表 <Icon name="arrow" size={16} /></a></div>
 </BaseLayout>

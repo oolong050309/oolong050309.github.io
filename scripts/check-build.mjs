@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const output = path.resolve('dist');
 const origin = 'https://oolong050309.github.io';
+const revision = (process.env.PUBLIC_SITE_REVISION || '').slice(0, 12);
 const pages = new Map();
 async function collect(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
@@ -27,6 +28,21 @@ let commentPages = 0;
 for (const [route, { html }] of pages) {
   const canonical = html.match(/<link\b[^>]*rel="canonical"[^>]*href="([^"]+)"/);
   assert.equal(canonical?.[1], new URL(route, origin).href, `wrong canonical URL on ${route}`);
+  if (revision) {
+    assert.ok(html.includes(`<meta name="site-revision" content="${revision}">`), `wrong deployment version on ${route}`);
+    // Check native navigation links, including use without JavaScript.
+    for (const nav of html.matchAll(/<nav\b[^>]*>([\s\S]*?)<\/nav>/g)) {
+      for (const link of nav[1].matchAll(/\bhref="([^\"]+)"/g)) {
+        if (!link[1].startsWith('/') || link[1].startsWith('//')) continue;
+        const target = new URL(link[1].replaceAll('&amp;', '&'), origin);
+        assert.equal(target.searchParams.get('v'), revision, `stale navigation link ${target.href} on ${route}`);
+      }
+    }
+    const searchData = html.match(/<script\b[^>]*id="search-data"[^>]*>([^<]*)<\/script>/);
+    for (const post of JSON.parse(searchData?.[1] || '[]')) {
+      assert.equal(new URL(post.href, origin).searchParams.get('v'), revision, `stale search result on ${route}`);
+    }
+  }
   assert.ok(!/\bnoindex\b/i.test(html), `production indexing is disabled on ${route}`);
   assert.ok(!/https?:\/\/(localhost|127\.0\.0\.1)(?:[:/]|\b)/i.test(html), `local URL published on ${route}`);
   const article = /^\/blog\/[^/]+\/$/.test(route);
