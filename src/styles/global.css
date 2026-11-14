@@ -70,6 +70,7 @@ h2 { font-size: 24px; line-height: 1.5; font-weight: 650; letter-spacing: .01em;
 .post-summary { min-width: 0; }
 .post-description { max-width: 680px; margin-top: 9px; color: var(--muted); font-size: 16px; line-height: 1.9; }
 .post-list.is-detailed .post-link { padding-block: 29px; }
+.posts-empty { padding: 32px 0; color: var(--muted); font-size: 17px; }
 .post-link time { flex-shrink: 0; font: 13px/1.7 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; transition: transform 300ms var(--ease-out); }
 .post-link:is(:hover, :focus-visible) time { transform: translateX(-28px); }
 .projects-section { padding-top: 64px; }

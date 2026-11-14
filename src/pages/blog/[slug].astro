@@ -4,7 +4,6 @@ import Icon from '../../components/Icon.astro';
 import { getPosts, formatDate } from '../../lib/content';
 import { site } from '../../config/site';
 import { categoryHref, subcategoryHref } from '../../config/categories';
-import FontPreview from '../../components/FontPreview.astro';
 import Comments from '../../components/Comments.astro';
 import 'katex/dist/katex.min.css';
 
@@ -14,11 +13,7 @@ export function getStaticPaths() {
 type Props = { post: ReturnType<typeof getPosts>[number] };
 const { post } = Astro.props;
 const { Content } = post;
-const showFontPreview = post.slug === 'cnn-explained' && post.sample;
-const headings = [
-  ...(showFontPreview ? [{ depth: 2, slug: 'font-preview', text: '字体试读' }] : []),
-  ...post.headings,
-].filter(heading => heading.depth <= 3);
+const headings = post.headings.filter(heading => heading.depth <= 3);
 ---
 <BaseLayout title={`${post.title} · ${site.name}`} description={post.description} article>
   <a class="article-back" href="/blog/"><Icon name="arrow" size={16} />回到所有文章</a>
@@ -30,7 +25,7 @@ const headings = [
     <ul class="article-tags" aria-label="文章标签">{post.tags.map(tag => <li>{tag}</li>)}</ul>
   </header>
   <div class="article-layout">
-    <article class="prose">{showFontPreview && <FontPreview />}<Content /></article>
+    <article class="prose"><Content /></article>
     <nav class="article-toc" aria-label="文章目录"><h2>目录</h2>{headings.map(heading => <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>{heading.text}</a>)}</nav>
   </div>
   <Comments />

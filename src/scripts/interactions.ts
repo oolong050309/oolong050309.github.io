@@ -13,7 +13,7 @@ function renderSearch(query = '') {
   if (!matches.length) {
     const empty = document.createElement('p');
     empty.className = 'empty-search';
-    empty.textContent = '没有找到相关文章，试试其他关键词。';
+    empty.textContent = posts.length ? '没有找到相关文章，试试其他关键词。' : '还没有公开的文章，敬请期待。';
     results.append(empty);
   }
   matches.forEach(post => {

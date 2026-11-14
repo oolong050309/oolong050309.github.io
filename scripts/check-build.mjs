@@ -19,7 +19,7 @@ async function collect(directory) {
 }
 await collect(output);
 assert.ok(pages.size > 0, 'build the site before verifying it');
-for (const route of ['/', '/blog/', '/projects/', '/now/', '/about/', '/blog/cnn-explained/']) {
+for (const route of ['/', '/blog/', '/projects/', '/now/', '/about/', ...['fundamentals', 'development', 'research', 'notes', 'cs336'].map(slug => `/blog/category/${slug}/`)]) {
   assert.ok(pages.has(route), `missing page: ${route}`);
 }
 let links = 0;
@@ -58,7 +58,8 @@ for (const [route, { html }] of pages) {
 }
 const rss = await readFile(path.join(output, 'rss.xml'), 'utf8');
 const feedLinks = [...rss.matchAll(/<(?:link|guid)>([^<]+)<\/(?:link|guid)>/g)].map(match => match[1]);
-assert.ok(feedLinks.length > 1, 'RSS must contain article links');
+const articleURLs = [...pages.keys()].filter(route => /^\/blog\/[^/]+\/$/.test(route)).map(route => new URL(route, origin).href);
+assert.deepEqual([...feedLinks].sort(), [`${origin}/`, ...articleURLs.flatMap(href => [href, href])].sort(), 'RSS must contain exactly the published articles, including an empty feed when there are none');
 for (const href of feedLinks) {
   const target = new URL(href);
   assert.equal(target.origin, origin, 'RSS must use the published domain');

@@ -22,6 +22,6 @@ const description = selectedSubcategory?.description || selected?.description ||
   <CategoryNav selected={category || 'all'} posts={allPosts} withinCategory={!!selectedSubcategory} />
   {category && <SubcategoryNav category={category} selected={selectedSubcategory?.slug} posts={allPosts} />}
   <section class="archive-section has-categories" aria-label={selected ? `${title}文章` : '全部文章'}>
-    {posts.length > 0 ? <PostList posts={posts} detailed /> : <div class="category-empty"><h2>这里还没有公开的文章</h2><p>{description}</p><a class="section-more" href="/blog/">先读其他文章 <span aria-hidden="true">↗</span></a></div>}
+    {posts.length > 0 ? <PostList posts={posts} detailed /> : <div class="category-empty"><h2>这里还没有公开的文章</h2><p>{allPosts.length ? description : '文章正在整理中，敬请期待。'}</p>{allPosts.length > 0 && <a class="section-more" href="/blog/">先读其他文章 <span aria-hidden="true">↗</span></a>}</div>}
   </section>
 </BaseLayout>
