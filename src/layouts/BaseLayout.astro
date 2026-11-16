@@ -2,23 +2,30 @@
 import { pageHref, siteRevision } from '../lib/navigation';
 import Icon from '../components/Icon.astro';
 import { site } from '../config/site';
-import { getPosts } from '../lib/content';
+import { getAllPosts } from '../lib/content';
 import '../styles/global.css';
 
-interface Props { title?: string; description?: string; article?: boolean; }
-const { title = site.title, description = site.description, article = false } = Astro.props;
+interface Props {
+  title?: string;
+  description?: string;
+  article?: boolean;
+  language?: 'zh-CN' | 'en';
+  alternates?: { language: string; href: string }[];
+}
+const { title = site.title, description = site.description, article = false, language = site.language, alternates = [] } = Astro.props;
+const english = language === 'en';
 const pathname = Astro.url.pathname;
 const canonicalURL = Astro.site ? new URL(pathname, Astro.site) : undefined;
 const navigation = [
-  { title: '文章', href: '/blog/' },
-  { title: '作品', href: '/projects/' },
-  { title: '此刻', href: '/now/' },
-  { title: '关于', href: '/about/' },
+  { title: english ? 'Articles' : '文章', href: '/blog/' },
+  { title: english ? 'Projects' : '作品', href: '/projects/' },
+  { title: english ? 'Now' : '此刻', href: '/now/' },
+  { title: english ? 'About' : '关于', href: '/about/' },
 ];
-const searchPosts = getPosts().map(({ title, description, category, subcategory, topic, tags, href }) => ({ title, description, category, subcategory, topic, tags, href: pageHref(href) }));
+const searchPosts = getAllPosts().map(({ title, description, category, subcategory, topic, tags, href }) => ({ title, description, category, subcategory, topic, tags, href: pageHref(href) }));
 ---
 <!doctype html>
-<html lang={site.language}>
+<html lang={language}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -27,6 +34,7 @@ const searchPosts = getPosts().map(({ title, description, category, subcategory,
     {siteRevision && <meta name="site-revision" content={siteRevision} />}
     <meta name="robots" content={import.meta.env.DEV ? 'noindex, nofollow' : 'index, follow'} />
     <link rel="canonical" href={canonicalURL} />
+    {Astro.site && alternates.map(alternate => <link rel="alternate" hreflang={alternate.language} href={new URL(alternate.href, Astro.site)} />)}
     {!import.meta.env.DEV && <link rel="sitemap" href="/sitemap-index.xml" />}
     {article && canonicalURL && <meta name="giscus:backlink" content={canonicalURL} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -38,26 +46,26 @@ const searchPosts = getPosts().map(({ title, description, category, subcategory,
   </head>
   <body id="top">
     <div class="reading-progress" data-reading-progress aria-hidden="true"></div>
-    <a class="skip-link" href="#main">跳到正文</a>
+    <a class="skip-link" href="#main">{english ? 'Skip to content' : '跳到正文'}</a>
     <div class="page-shell">
       <header class="site-header">
-        <a class="brand" href={pageHref('/')} aria-label="Pip，返回首页" aria-current={pathname === '/' ? 'page' : undefined}>{site.name}<span aria-hidden="true">.</span></a>
-        <nav class="main-nav" aria-label="主导航">
+        <a class="brand" href={pageHref('/')} aria-label={english ? 'Pip, home' : 'Pip，返回首页'} aria-current={pathname === '/' ? 'page' : undefined}>{site.name}<span aria-hidden="true">.</span></a>
+        <nav class="main-nav" aria-label={english ? 'Main navigation' : '主导航'}>
           {navigation.map(item => <a href={pageHref(item.href)} aria-current={pathname === item.href ? 'page' : pathname.startsWith(item.href) ? 'location' : undefined}>{item.title}</a>)}
-          <button class="icon-button" type="button" data-search-open aria-label="搜索文章"><Icon name="search" size={18} /></button>
+          <button class="icon-button" type="button" data-search-open aria-label={english ? 'Search articles' : '搜索文章'}><Icon name="search" size={18} /></button>
         </nav>
       </header>
       <main id="main" class:list={['main-content', { 'article-content': article }]}><slot /></main>
       <footer class="site-footer" data-reveal>
         <p>© {new Date().getFullYear()} {site.name}</p>
-        <div><a href="/rss.xml">RSS <span aria-hidden="true">↗</span></a><a href="#top">回到顶部 <span aria-hidden="true">↑</span></a></div>
+        <div><a href="/rss.xml">RSS <span aria-hidden="true">↗</span></a><a href="#top">{english ? 'Back to top' : '回到顶部'} <span aria-hidden="true">↑</span></a></div>
       </footer>
     </div>
     <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
-      <div class="search-dialog-header"><h2 id="search-title">搜索文章</h2><button class="icon-button" type="button" data-close-search aria-label="关闭搜索"><Icon name="close" /></button></div>
-      <label class="search-field"><span class="sr-only">搜索关键词</span><Icon name="search" size={18} /><input id="search-input" type="search" placeholder="输入关键词…" autocomplete="off" /></label>
+      <div class="search-dialog-header"><h2 id="search-title">{english ? 'Search articles' : '搜索文章'}</h2><button class="icon-button" type="button" data-close-search aria-label={english ? 'Close search' : '关闭搜索'}><Icon name="close" /></button></div>
+      <label class="search-field"><span class="sr-only">{english ? 'Keywords' : '搜索关键词'}</span><Icon name="search" size={18} /><input id="search-input" type="search" placeholder={english ? 'Search…' : '输入关键词…'} autocomplete="off" /></label>
       <div id="search-results" aria-live="polite"></div>
-      <p class="dialog-footnote"><kbd>Esc</kbd> 关闭</p>
+      <p class="dialog-footnote"><kbd>Esc</kbd> {english ? 'Close' : '关闭'}</p>
     </dialog>
     <script id="search-data" type="application/json" set:html={JSON.stringify(searchPosts).replace(/</g, '\\u003c')} />
     <script src="../scripts/interactions.ts"></script>

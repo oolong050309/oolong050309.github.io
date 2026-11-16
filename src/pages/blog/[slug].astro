@@ -2,33 +2,45 @@
 import { pageHref } from '../../lib/navigation';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
-import { getPosts, formatDate } from '../../lib/content';
+import { getAllPosts, formatDate } from '../../lib/content';
 import { site } from '../../config/site';
 import { categoryHref, subcategoryHref } from '../../config/categories';
 import Comments from '../../components/Comments.astro';
 import 'katex/dist/katex.min.css';
 
 export function getStaticPaths() {
-  return getPosts().map(post => ({ params: { slug: post.slug }, props: { post } }));
+  const posts = getAllPosts();
+  return posts.map(post => ({ params: { slug: post.slug }, props: {
+    post,
+    translations: posts.filter(item => (item.translationOf || item.slug) === (post.translationOf || post.slug)),
+  } }));
 }
-type Props = { post: ReturnType<typeof getPosts>[number] };
-const { post } = Astro.props;
+type Props = { post: ReturnType<typeof getAllPosts>[number]; translations: ReturnType<typeof getAllPosts> };
+const { post, translations } = Astro.props;
 const { Content } = post;
 const headings = post.headings.filter(heading => heading.depth <= 3);
+const english = post.language === 'en';
+const categoryLabel = english ? ({ 学习笔记: 'Learning notes', 开发实践: 'Development', 研究笔记: 'Research notes', 随笔: 'Essays' }[post.category]) : post.category;
+const alternates = translations.length > 1 ? translations.map(item => ({ language: item.language, href: item.href })) : [];
 ---
-<BaseLayout title={`${post.title} · ${site.name}`} description={post.description} article>
-  <a class="article-back" href={pageHref('/blog/')}><Icon name="arrow" size={16} />回到所有文章</a>
+<BaseLayout title={`${post.title} · ${site.name}`} description={post.description} language={post.language} alternates={alternates} article>
+  <a class="article-back" href={pageHref('/blog/')}><Icon name="arrow" size={16} />{english ? 'All articles' : '回到所有文章'}</a>
   <header class="article-header">
-    <span class="eyebrow"><a class="article-category-link" href={pageHref(categoryHref(post.category))}>{post.category}</a>{post.subcategory && <> / <a class="article-category-link" href={pageHref(subcategoryHref(post.subcategory))}>{post.subcategory}</a></>} / {post.topic}</span>
+    <div class="article-heading-row">
+      <span class="eyebrow"><a class="article-category-link" href={pageHref(categoryHref(post.category))}>{categoryLabel}</a>{post.subcategory && <> / <a class="article-category-link" href={pageHref(subcategoryHref(post.subcategory))}>{post.subcategory}</a></>} / {post.topic}</span>
+      {translations.length > 1 && <nav class="article-languages" aria-label={english ? 'Article language' : '文章语言'}>
+        {translations.toSorted((a, b) => a.language === 'zh-CN' ? -1 : b.language === 'zh-CN' ? 1 : 0).map(item => <a href={pageHref(item.href)} lang={item.language} hreflang={item.language} aria-current={item.slug === post.slug ? 'page' : undefined}>{item.language === 'en' ? 'English' : '中文'}</a>)}
+      </nav>}
+    </div>
     <h1>{post.title}</h1>
     <p class="article-description">{post.description}</p>
-    <div class="article-meta"><time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time><span>约 {post.minutes} 分钟阅读</span>{post.sample && <span class="sample-label">用于预览排版的示例文章</span>}</div>
-    <ul class="article-tags" aria-label="文章标签">{post.tags.map(tag => <li>{tag}</li>)}</ul>
+    <div class="article-meta"><time datetime={post.publishedAt}>{formatDate(post.publishedAt, post.language)}</time><span>{english ? `${post.minutes} min read` : `约 ${post.minutes} 分钟阅读`}</span>{post.sample && <span class="sample-label">{english ? 'Sample article' : '用于预览排版的示例文章'}</span>}</div>
+    <ul class="article-tags" aria-label={english ? 'Article tags' : '文章标签'}>{post.tags.map(tag => <li>{tag}</li>)}</ul>
   </header>
   <div class="article-layout">
-    <article class="prose"><Content /></article>
-    <nav class="article-toc" aria-label="文章目录"><h2>目录</h2>{headings.map(heading => <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>{heading.text}</a>)}</nav>
+    <article class="prose" lang={post.language} data-translation-of={post.translationOf}><Content /></article>
+    <nav class="article-toc" aria-label={english ? 'Table of contents' : '文章目录'}><h2>{english ? 'Contents' : '目录'}</h2>{headings.map(heading => <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>{heading.text}</a>)}</nav>
   </div>
-  <Comments />
-  <div class="article-end"><a href={pageHref('/blog/')}>回到文章列表 <Icon name="arrow" size={16} /></a></div>
+  <Comments language={post.language} discussionPath={post.translationOf ? `/blog/${post.translationOf}/` : undefined} />
+  <div class="article-end"><a href={pageHref('/blog/')}>{english ? 'All articles' : '回到文章列表'} <Icon name="arrow" size={16} /></a></div>
 </BaseLayout>

@@ -1,28 +1,32 @@
 ---
 import { comments } from '../config/comments';
 
+interface Props { language?: 'zh-CN' | 'en'; discussionPath?: string; }
+const { language = 'zh-CN', discussionPath } = Astro.props;
+const english = language === 'en';
 const discussionsURL = `https://github.com/${comments.repo}/discussions`;
 ---
 <section class="article-comments" id="comments" aria-labelledby="comments-title">
-  <h2 id="comments-title">交流与反馈</h2>
-  <p class="comments-intro">登录 GitHub 即可留言，也可以用点赞或表情告诉我你的想法。</p>
+  <h2 id="comments-title">{english ? 'Discussion' : '交流与反馈'}</h2>
+  <p class="comments-intro">{english ? 'Sign in with GitHub to comment or leave a reaction.' : '登录 GitHub 即可留言，也可以用点赞或表情告诉我你的想法。'}</p>
   <giscus-widget
     id="giscus-comments"
     repo={comments.repo}
     repoid={comments.repoId}
     category={comments.category}
     categoryid={comments.categoryId}
-    mapping="pathname"
+    mapping={discussionPath ? 'specific' : 'pathname'}
+    term={discussionPath}
     strict="1"
     reactionsenabled="1"
     emitmetadata="0"
     inputposition="top"
     theme="light"
-    lang="zh-CN"
+    lang={language}
     loading="lazy"
   ></giscus-widget>
-  <noscript><p class="comments-note">启用 JavaScript 后可在这里查看评论和点赞。</p></noscript>
-  <p class="comments-note">评论区没有加载？<a href={discussionsURL} target="_blank" rel="noopener noreferrer">前往 GitHub 讨论区 <span aria-hidden="true">↗</span></a></p>
+  <noscript><p class="comments-note">{english ? 'Enable JavaScript to read comments and reactions.' : '启用 JavaScript 后可在这里查看评论和点赞。'}</p></noscript>
+  <p class="comments-note">{english ? 'Comments not loading? ' : '评论区没有加载？'}<a href={discussionsURL} target="_blank" rel="noopener noreferrer">{english ? 'Open GitHub Discussions' : '前往 GitHub 讨论区'} <span aria-hidden="true">↗</span></a></p>
 </section>
 
 <script>

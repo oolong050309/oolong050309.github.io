@@ -12,12 +12,14 @@ export interface PostMeta {
   tags?: string[];
   minutes: number;
   sample: boolean;
+  language?: 'zh-CN' | 'en';
+  translationOf?: string;
 }
 
 const files = import.meta.glob<MarkdownInstance<PostMeta>>('../content/blog/*.md', { eager: true });
 
-export function getPosts() {
-  return Object.values(files)
+export function getAllPosts() {
+  const posts = Object.values(files)
     .map((file) => {
       const post = file.frontmatter;
       const category = articleCategories.find(item => item.label === post.category);
@@ -30,6 +32,7 @@ export function getPosts() {
       }
       return {
         ...post,
+        language: post.language || 'zh-CN' as const,
         tags: [...new Set([post.topic, ...(Array.isArray(post.tags) ? post.tags : [])].filter(tag => typeof tag === 'string' && tag.trim()))],
         href: `/blog/${post.slug}/`,
         Content: file.Content,
@@ -37,10 +40,25 @@ export function getPosts() {
       };
     })
     .sort((a, b) => new Date(b.publishedAt).valueOf() - new Date(a.publishedAt).valueOf());
+  const slugs = new Set<string>();
+  for (const post of posts) {
+    if (slugs.has(post.slug)) throw new Error(`Duplicate article slug: ${post.slug}`);
+    slugs.add(post.slug);
+    if (post.translationOf) {
+      const original = posts.find(item => item.slug === post.translationOf && !item.translationOf);
+      if (!original || original.language === post.language) throw new Error(`Invalid article translation: ${post.slug}`);
+    }
+  }
+  return posts;
 }
 
-export function formatDate(value: string) {
-  return new Intl.DateTimeFormat('zh-CN', {
+// Translations have their own pages, but count as one article in archives and RSS.
+export function getPosts() {
+  return getAllPosts().filter(post => !post.translationOf);
+}
+
+export function formatDate(value: string, language = 'zh-CN') {
+  return new Intl.DateTimeFormat(language, {
     year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Shanghai',
   }).format(new Date(value)).replaceAll('/', '.');
 }

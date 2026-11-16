@@ -50,13 +50,31 @@ for (const [route, { html }] of pages) {
   assert.equal(widgets.length, article ? 1 : 0, `wrong number of comment widgets on ${route}`);
   if (article) {
     const widget = widgets[0][0];
+    const translationOf = html.match(/data-translation-of="([^"]+)"/)?.[1];
     assert.ok(widget.includes('repo="oolong050309/oolong050309.github.io"'), `wrong comment repository on ${route}`);
     assert.match(widget, /repoid="R_[^"]+"/, `missing comment repository ID on ${route}`);
     assert.match(widget, /categoryid="DIC_[^"]+"/, `missing discussion category ID on ${route}`);
-    assert.ok(widget.includes('mapping="pathname"') && widget.includes('strict="1"'), `unstable comment mapping on ${route}`);
+    assert.ok(widget.includes('strict="1"'), `non-strict comment mapping on ${route}`);
+    if (translationOf) {
+      assert.ok(widget.includes('mapping="specific"') && widget.includes(`term="/blog/${translationOf}/"`), `translation must share the original discussion on ${route}`);
+      assert.ok(pages.has(`/blog/${translationOf}/`), `missing original article on ${route}`);
+    } else {
+      assert.ok(widget.includes('mapping="pathname"'), `unstable comment mapping on ${route}`);
+    }
     assert.ok(widget.includes('reactionsenabled="1"'), `article reactions disabled on ${route}`);
     const backlink = html.match(/<meta\b[^>]*name="giscus:backlink"[^>]*content="([^"]+)"/);
     assert.equal(backlink?.[1], new URL(route, origin).href, `wrong discussion backlink on ${route}`);
+    const language = html.match(/<html\b[^>]*lang="([^"]+)"/)?.[1];
+    assert.ok(language === 'zh-CN' || language === 'en', `missing article language on ${route}`);
+    assert.ok(widget.includes(`lang="${language}"`), `wrong discussion language on ${route}`);
+    for (const alternate of html.matchAll(/<link\b[^>]*rel="alternate"[^>]*hreflang="([^"]+)"[^>]*href="([^"]+)"/g)) {
+      const target = new URL(alternate[2]);
+      const translated = pages.get(target.pathname);
+      assert.equal(target.origin, origin, `external article translation on ${route}`);
+      assert.ok(translated, `missing article translation on ${route}`);
+      assert.ok(translated.html.includes(`<html lang="${alternate[1]}"`), `wrong translated page language on ${route}`);
+      assert.ok(translated.html.includes(`hreflang="${language}" href="${origin}${route}"`), `translation must link back to ${route}`);
+    }
     commentPages++;
   }
   for (const match of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
@@ -74,7 +92,7 @@ for (const [route, { html }] of pages) {
 }
 const rss = await readFile(path.join(output, 'rss.xml'), 'utf8');
 const feedLinks = [...rss.matchAll(/<(?:link|guid)>([^<]+)<\/(?:link|guid)>/g)].map(match => match[1]);
-const articleURLs = [...pages.keys()].filter(route => /^\/blog\/[^/]+\/$/.test(route)).map(route => new URL(route, origin).href);
+const articleURLs = [...pages.entries()].filter(([route, { html }]) => /^\/blog\/[^/]+\/$/.test(route) && !html.includes('data-translation-of=')).map(([route]) => new URL(route, origin).href);
 assert.deepEqual([...feedLinks].sort(), [`${origin}/`, ...articleURLs.flatMap(href => [href, href])].sort(), 'RSS must contain exactly the published articles, including an empty feed when there are none');
 for (const href of feedLinks) {
   const target = new URL(href);

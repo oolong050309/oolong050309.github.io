@@ -5,6 +5,7 @@ const posts: SearchPost[] = JSON.parse(document.querySelector('#search-data')?.t
 const dialog = document.querySelector<HTMLDialogElement>('#search-dialog');
 const input = document.querySelector<HTMLInputElement>('#search-input');
 const results = document.querySelector<HTMLElement>('#search-results');
+const english = document.documentElement.lang === 'en';
 
 function renderSearch(query = '') {
   if (!results) return;
@@ -13,7 +14,7 @@ function renderSearch(query = '') {
   if (!matches.length) {
     const empty = document.createElement('p');
     empty.className = 'empty-search';
-    empty.textContent = posts.length ? '没有找到相关文章，试试其他关键词。' : '还没有公开的文章，敬请期待。';
+    empty.textContent = posts.length ? (english ? 'No matching articles. Try another keyword.' : '没有找到相关文章，试试其他关键词。') : (english ? 'No articles published yet.' : '还没有公开的文章，敬请期待。');
     results.append(empty);
   }
   matches.forEach(post => {
@@ -59,12 +60,12 @@ document.querySelectorAll<HTMLElement>('.prose pre').forEach(pre => {
   const copy = document.createElement('button');
   copy.className = 'copy-code';
   copy.type = 'button';
-  copy.textContent = '复制';
-  copy.setAttribute('aria-label', '复制代码');
+  copy.textContent = english ? 'Copy' : '复制';
+  copy.setAttribute('aria-label', english ? 'Copy code' : '复制代码');
   copy.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(pre.querySelector('code')?.textContent || ''); copy.textContent = '已复制'; }
-    catch { copy.textContent = '请手动复制'; }
-    window.setTimeout(() => { copy.textContent = '复制'; }, 2000);
+    try { await navigator.clipboard.writeText(pre.querySelector('code')?.textContent || ''); copy.textContent = english ? 'Copied' : '已复制'; }
+    catch { copy.textContent = english ? 'Copy manually' : '请手动复制'; }
+    window.setTimeout(() => { copy.textContent = english ? 'Copy' : '复制'; }, 2000);
   });
   wrapper.append(copy);
 });

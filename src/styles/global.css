@@ -157,6 +157,11 @@ kbd { font: inherit; }
 .article-back svg { transform: rotate(180deg); }
 .article-back:hover { color: var(--text); }
 .eyebrow { font-size: 14px; color: var(--muted); }
+.article-heading-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+.article-languages { display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 5px; }
+.article-languages a { padding: 5px 12px; border-radius: 3px; font-size: 13px; line-height: 1.8; color: var(--muted); }
+.article-languages a[aria-current='page'] { background: var(--text); color: var(--bg); }
+.article-languages a:not([aria-current]):hover { background: #f2f2f2; color: var(--text); }
 .article-header h1 { font-size: 42px; font-weight: 650; letter-spacing: -.6px; line-height: 1.5; margin-top: 12px; }
 .article-description { font-size: 17px; line-height: 1.95; color: var(--muted); margin-top: 16px; }
 .article-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; font-size: 13px; color: var(--muted); margin: 20px 0 35px; }
