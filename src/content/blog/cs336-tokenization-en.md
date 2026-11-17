@@ -32,11 +32,11 @@ The vocabulary maps available tokens to IDs. An ID is a categorical label, not a
 
 In a typical Transformer, the IDs index an embedding matrix to obtain vectors for subsequent computation. The path is <strong>text → discrete IDs → vectors → model computation</strong>. Tokenization itself does not provide language understanding.
 
-For a pipeline that does not otherwise alter the input, encoding and then decoding should recover the original text. Lossy preprocessing, such as lowercasing, can invalidate that assumption. The [tiktoken documentation](https://github.com/openai/tiktoken) and [Tokenizers pipeline guide](https://huggingface.co/docs/tokenizers/pipeline) illustrate these different operations.
+For a pipeline that does not otherwise alter the input, encoding and then decoding should recover the original text. Lossy preprocessing, such as lowercasing, can invalidate that assumption.
 
 ## Characters and bytes are different units
 
-Unicode defines code points. UTF-8 represents valid Unicode scalar values using one to four bytes. Both code points and byte values can be written as integers, but they represent different things. [Unicode FAQ](https://www.unicode.org/faq/utf_bom.html)
+Unicode defines code points. UTF-8 represents valid Unicode scalar values using one to four bytes. Both code points and byte values can be written as integers, but they represent different things.
 
 ```python
 ord("猫")                  # 29483
@@ -57,7 +57,7 @@ Characters and bytes provide relatively small units. To shorten sequences furthe
 
 ## Word-level encoding meets an open vocabulary
 
-Word-level tokenization has been common in traditional NLP, and early neural machine translation also relied heavily on fixed word vocabularies. The approach follows an intuitive pattern: split a sentence into words, then assign an ID to each distinct word. [Word-level models and the open-vocabulary problem](https://aclanthology.org/P16-1162/)
+Word-level tokenization has been common in traditional NLP, and early neural machine translation also relied heavily on fixed word vocabularies. The approach follows an intuitive pattern: split a sentence into words, then assign an ID to each distinct word.
 
 A straightforward implementation splits English text on whitespace:
 
@@ -89,7 +89,7 @@ If neither Velora nor Nuvex is in the vocabulary, “I met Velora” and “I me
 
 Earlier approaches handled rare words through larger vocabularies, external dictionaries, or copying source words. These still had limitations, including inflection and transliteration in translation. Subword methods offer another route: frequent words may remain intact, while rare and new words can be composed from smaller reusable pieces. In 2016, Sennrich and colleagues adapted BPE for subword segmentation in neural machine translation. [Neural Machine Translation of Rare Words with Subword Units](https://aclanthology.org/P16-1162/)
 
-The key change is that representable words no longer have to be listed individually as complete vocabulary entries. BPE, WordPiece, and Unigram all support subword representations, although they learn pieces differently. [Subword tokenization methods](https://huggingface.co/docs/transformers/en/tokenizer_summary)
+The key change is that representable words no longer have to be listed individually as complete vocabulary entries. BPE, WordPiece, and Unigram all support subword representations, although they learn pieces differently.
 
 ## Why not keep growing the vocabulary?
 
@@ -101,17 +101,25 @@ $$
 \text{bytes per token} = \frac{\text{UTF-8 bytes}}{\text{tokens}}
 $$
 
-For the same text, a larger value means a shorter token sequence. The word learning contains eight UTF-8 bytes. Raw byte encoding gives 8 ÷ 8 = 1 byte per token; representing the whole word as one token gives 8 ÷ 1 = 8. This is a shorter sequence, not necessarily an eightfold reduction in file size: token IDs also require storage.
+For the same text, a larger value means a shorter token sequence. A passage occupying 1,000 UTF-8 bytes requires 1,000 tokens with raw byte encoding. At an average of four bytes per token, it needs only about 250 tokens. This “compression” shortens the sequence while preserving the input information. It does not necessarily reduce the file size fourfold, since token IDs also require storage.
 
-Shorter sequences allow more text within a fixed context-token limit and typically reduce the computation required to process that text. Larger vocabularies also have costs. With vocabulary size V and embedding dimension d, one embedding matrix contains V × d parameters. The output layer must also score vocabulary candidates.
+Sequence length directly affects computation. In standard full self-attention, each token can interact with the other tokens in the sequence. With a fixed hidden dimension, the computation for these pairwise interactions grows as $O(L^2)$ with sequence length $L$. Reducing a sequence from 1,000 to 250 tokens makes it four times shorter, reducing this attention computation to approximately one sixteenth. Shorter sequences also allow more original text within the same context-token limit.
+
+This explains why compact representations usually help during training and prompt processing. Actual model speed also depends on projections, feed-forward networks, hardware utilization, and memory access, so the reduction above is not an overall speedup factor.
+
+Step-by-step generation also involves caching. Typical autoregressive generation uses a KV cache to reuse the keys and values of past tokens. Each step mainly computes attention between the new token and the existing context, making this part of the cost approximately linear in context length. For the same output text, a more compact representation usually requires fewer generation steps; the same input text also occupies a shorter cache. Shorter sequences still help, but each generation step does not recompute a full $L \times L$ attention matrix.
+
+Adding ever longer pieces to the vocabulary also brings costs. First, <strong>training examples become sparse</strong>. If many complete words, phrases, or sentences receive their own tokens, some may occur only a few times in the training corpus. The model has more individual entries to learn, without necessarily having enough examples for the rare ones. Reusable smaller pieces allow different texts to share training opportunities for those pieces.
+
+Second, <strong>parameter and computation costs increase</strong>. With vocabulary size $V$ and embedding dimension $d$, one embedding matrix contains $V \times d$ parameters. Holding the dimension fixed, a fourfold vocabulary increase makes that matrix four times larger, using more storage and device memory. A typical full-vocabulary output layer also scores every candidate token at each prediction, so a larger vocabulary increases that computation.
 
 As an extreme thought experiment, assigning one token to every training article would make those articles very short sequences, but the entries would barely transfer to new articles. We need representations that are reusable, learnable, and computationally appropriate, beyond a high compression number.
 
-This leads to a useful question: <strong>can we retain small units that cover new text while giving frequent pieces more compact representations?</strong> BPE provides a way to choose those pieces from data.
+The aim is therefore to <strong>use a bounded vocabulary that represents frequent pieces compactly while composing rare pieces from smaller units</strong>. We want fewer tokens to process, enough examples to learn vocabulary entries well, and manageable parameter and computation costs. BPE provides a way to choose those pieces from data.
 
 ## BPE gives common pieces their own IDs
 
-<strong>Byte Pair Encoding (BPE)</strong> builds a vocabulary using adjacent-piece frequencies. Byte-level BPE begins with all 256 byte values. Each training step merges the most frequent adjacent token pair and adds the resulting token to the vocabulary. Pair counts are then recomputed on the updated sequences. [BPE training algorithm](https://huggingface.co/learn/llm-course/en/chapter6/5)
+<strong>Byte Pair Encoding (BPE)</strong> builds a vocabulary using adjacent-piece frequencies. Byte-level BPE begins with all 256 byte values. Each training step merges the most frequent adjacent token pair and adds the resulting token to the vocabulary. Pair counts are then recomputed on the updated sequences.
 
 A pair consists of two tokens that are adjacent <strong>at the current training step</strong>. Tokens grow during training, so later merges need not involve single bytes.
 
@@ -155,7 +163,7 @@ Nothing requires ab, abab, or ababc to be meaningful words. <strong>BPE learns r
 
 ## Learning rules and applying rules
 
-Training a tokenizer uses corpus statistics to learn merges. Encoding new text applies the existing merge priorities; it does not train a new set of rules from the frequencies in each input. [tiktoken educational implementation](https://github.com/openai/tiktoken/blob/main/tiktoken/_educational.py)
+Training a tokenizer uses corpus statistics to learn merges. Encoding new text applies the existing merge priorities; it does not train a new set of rules from the frequencies in each input.
 
 Using our vocabulary, the unseen segment ababx becomes:
 
@@ -175,11 +183,11 @@ Decoding retrieves each token’s bytes, concatenates them, and then decodes the
 [257, 120] → b"abab" + b"x" → "ababx"
 ```
 
-An individual token may not contain a complete character, so bytes should be combined before decoding. A complete encoded sequence can reconstruct its input, but arbitrary or truncated token sequences may not form valid UTF-8. [Unicode guidance on invalid byte sequences](https://www.unicode.org/faq/utf_bom.html)
+An individual token may not contain a complete character, so bytes should be combined before decoding. A complete encoded sequence can reconstruct its input, but arbitrary or truncated token sequences may not form valid UTF-8.
 
 ## From a basic algorithm to a usable tokenizer
 
-Real text requires more than a merge loop. A practical pipeline may include preprocessing, pre-tokenization, subword encoding, and the addition or recognition of special markers. The exact configuration depends on the model. [Tokenization pipeline](https://huggingface.co/docs/tokenizers/pipeline)
+Real text requires more than a merge loop. A practical pipeline may include preprocessing, pre-tokenization, subword encoding, and the addition or recognition of special markers. The exact configuration depends on the model.
 
 - <strong>Pre-tokenization:</strong> divide text into segments that constrain merge boundaries. Whitespace and punctuation handling affect the result.
 
@@ -208,7 +216,7 @@ for text in samples:
     print("Bytes/token:", round(ratio, 2))
 ```
 
-Install tiktoken in your Python environment before running the example. Printing byte pieces helps avoid treating each token as a complete character. [Installation and usage](https://github.com/openai/tiktoken)
+Install tiktoken in your Python environment before running the example. Printing byte pieces helps avoid treating each token as a complete character.
 
 ## Could models start directly from bytes?
 
