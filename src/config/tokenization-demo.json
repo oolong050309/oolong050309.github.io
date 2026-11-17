@@ -1,0 +1,325 @@
+{
+  "encoding": "o200k_base",
+  "generator": "tiktoken 0.14.0",
+  "text": "I miss you, Larry.",
+  "bytes": [
+    73,
+    32,
+    109,
+    105,
+    115,
+    115,
+    32,
+    121,
+    111,
+    117,
+    44,
+    32,
+    76,
+    97,
+    114,
+    114,
+    121,
+    46
+  ],
+  "segments": [
+    {
+      "text": "I",
+      "start": 0,
+      "end": 1
+    },
+    {
+      "text": " miss",
+      "start": 1,
+      "end": 6
+    },
+    {
+      "text": " you",
+      "start": 6,
+      "end": 10
+    },
+    {
+      "text": ",",
+      "start": 10,
+      "end": 11
+    },
+    {
+      "text": " Larry",
+      "start": 11,
+      "end": 17
+    },
+    {
+      "text": ".",
+      "start": 17,
+      "end": 18
+    }
+  ],
+  "merges": [
+    {
+      "segment": 1,
+      "left": {
+        "text": "i",
+        "start": 3,
+        "end": 4
+      },
+      "right": {
+        "text": "s",
+        "start": 4,
+        "end": 5
+      },
+      "result": {
+        "text": "is",
+        "start": 3,
+        "end": 5,
+        "id": 276
+      }
+    },
+    {
+      "segment": 1,
+      "left": {
+        "text": " ",
+        "start": 1,
+        "end": 2
+      },
+      "right": {
+        "text": "m",
+        "start": 2,
+        "end": 3
+      },
+      "result": {
+        "text": " m",
+        "start": 1,
+        "end": 3,
+        "id": 284
+      }
+    },
+    {
+      "segment": 1,
+      "left": {
+        "text": "is",
+        "start": 3,
+        "end": 5
+      },
+      "right": {
+        "text": "s",
+        "start": 5,
+        "end": 6
+      },
+      "result": {
+        "text": "iss",
+        "start": 3,
+        "end": 6,
+        "id": 1009
+      }
+    },
+    {
+      "segment": 1,
+      "left": {
+        "text": " m",
+        "start": 1,
+        "end": 3
+      },
+      "right": {
+        "text": "iss",
+        "start": 3,
+        "end": 6
+      },
+      "result": {
+        "text": " miss",
+        "start": 1,
+        "end": 6,
+        "id": 5141
+      }
+    },
+    {
+      "segment": 2,
+      "left": {
+        "text": "o",
+        "start": 8,
+        "end": 9
+      },
+      "right": {
+        "text": "u",
+        "start": 9,
+        "end": 10
+      },
+      "result": {
+        "text": "ou",
+        "start": 8,
+        "end": 10,
+        "id": 283
+      }
+    },
+    {
+      "segment": 2,
+      "left": {
+        "text": " ",
+        "start": 6,
+        "end": 7
+      },
+      "right": {
+        "text": "y",
+        "start": 7,
+        "end": 8
+      },
+      "result": {
+        "text": " y",
+        "start": 6,
+        "end": 8,
+        "id": 342
+      }
+    },
+    {
+      "segment": 2,
+      "left": {
+        "text": " y",
+        "start": 6,
+        "end": 8
+      },
+      "right": {
+        "text": "ou",
+        "start": 8,
+        "end": 10
+      },
+      "result": {
+        "text": " you",
+        "start": 6,
+        "end": 10,
+        "id": 481
+      }
+    },
+    {
+      "segment": 4,
+      "left": {
+        "text": "a",
+        "start": 13,
+        "end": 14
+      },
+      "right": {
+        "text": "r",
+        "start": 14,
+        "end": 15
+      },
+      "result": {
+        "text": "ar",
+        "start": 13,
+        "end": 15,
+        "id": 277
+      }
+    },
+    {
+      "segment": 4,
+      "left": {
+        "text": " ",
+        "start": 11,
+        "end": 12
+      },
+      "right": {
+        "text": "L",
+        "start": 12,
+        "end": 13
+      },
+      "result": {
+        "text": " L",
+        "start": 11,
+        "end": 13,
+        "id": 451
+      }
+    },
+    {
+      "segment": 4,
+      "left": {
+        "text": "r",
+        "start": 15,
+        "end": 16
+      },
+      "right": {
+        "text": "y",
+        "start": 16,
+        "end": 17
+      },
+      "result": {
+        "text": "ry",
+        "start": 15,
+        "end": 17,
+        "id": 1102
+      }
+    },
+    {
+      "segment": 4,
+      "left": {
+        "text": "ar",
+        "start": 13,
+        "end": 15
+      },
+      "right": {
+        "text": "ry",
+        "start": 15,
+        "end": 17
+      },
+      "result": {
+        "text": "arry",
+        "start": 13,
+        "end": 17,
+        "id": 20052
+      }
+    },
+    {
+      "segment": 4,
+      "left": {
+        "text": " L",
+        "start": 11,
+        "end": 13
+      },
+      "right": {
+        "text": "arry",
+        "start": 13,
+        "end": 17
+      },
+      "result": {
+        "text": " Larry",
+        "start": 11,
+        "end": 17,
+        "id": 55320
+      }
+    }
+  ],
+  "tokens": [
+    {
+      "text": "I",
+      "start": 0,
+      "end": 1,
+      "id": 40
+    },
+    {
+      "text": " miss",
+      "start": 1,
+      "end": 6,
+      "id": 5141
+    },
+    {
+      "text": " you",
+      "start": 6,
+      "end": 10,
+      "id": 481
+    },
+    {
+      "text": ",",
+      "start": 10,
+      "end": 11,
+      "id": 11
+    },
+    {
+      "text": " Larry",
+      "start": 11,
+      "end": 17,
+      "id": 55320
+    },
+    {
+      "text": ".",
+      "start": 17,
+      "end": 18,
+      "id": 13
+    }
+  ]
+}

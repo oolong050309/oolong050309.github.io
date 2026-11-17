@@ -10,6 +10,7 @@ tags: ["CS336", "BPE", "Tokenizer", "大语言模型"]
 minutes: 13
 sample: false
 language: "en"
+tokenizationDemo: true
 translationOf: "cs336-tokenization"
 ---
 
@@ -34,12 +35,21 @@ In a typical Transformer, the IDs index an embedding matrix to obtain vectors fo
 
 For a pipeline that does not otherwise alter the input, encoding and then decoding should recover the original text. Lossy preprocessing, such as lowercasing, can invalidate that assumption.
 
+### Watch a sentence become tokens
+
+Follow “I miss you, Larry.” from the original text through pre-tokenization and byte merges to token IDs. The ␠ symbol in the final tokens represents an existing space, which is also part of the vocabulary entry.
+
+<!-- tokenization-demo -->
+
 ## Characters and bytes are different units
 
 Unicode defines code points. UTF-8 represents valid Unicode scalar values using one to four bytes. Both code points and byte values can be written as integers, but they represent different things.
 
 ```python
+# ord() returns the character's Unicode code point
 ord("猫")                  # 29483
+
+# encode("utf-8") produces UTF-8 bytes; list() displays their integer values
 list("猫".encode("utf-8"))   # [231, 140, 171]
 ```
 

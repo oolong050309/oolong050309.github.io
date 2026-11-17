@@ -10,6 +10,7 @@ tags: ["CS336", "BPE", "Tokenizer", "大语言模型"]
 minutes: 12
 sample: false
 language: "zh-CN"
+tokenizationDemo: true
 ---
 
 ## 为什么语言模型需要 Tokenization？
@@ -33,12 +34,21 @@ decode：token ID 序列 → 文本
 
 对于不额外改写文本的编码流程，我们希望 encode 后再 decode 能还原原文。如果流程还包含大小写转换等有损预处理，就不能直接假设这一点。
 
+### 看一句话如何变成 token
+
+以 “I miss you, Larry.” 为例，可以逐步查看从原文、预切分、字节合并到 token 编号的过程。最终 token 中显示的 ␠ 代表原有空格；它也是词表条目的一部分。
+
+<!-- tokenization-demo -->
+
 ## 字符和字节，为什么要分清？
 
 Unicode 为字符定义码点，UTF-8 则把有效的 Unicode 标量值编码成一到四个字节。码点和字节值虽然都可以写成整数，但表示的是不同东西。
 
 ```python
+# ord() 返回字符的 Unicode 码点
 ord("猫")                  # 29483
+
+# encode("utf-8") 编码为 UTF-8 字节，list() 将字节值列为整数
 list("猫".encode("utf-8"))   # [231, 140, 171]
 ```
 

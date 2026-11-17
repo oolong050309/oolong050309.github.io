@@ -96,6 +96,14 @@ GitHub Pages 的 HTML 响应有约 10 分钟缓存，部署后可能出现某个
 
 CS336 Tokenization 的原文位于 `src/content/blog/cs336-tokenization.md`，英文译文位于 `src/content/blog/cs336-tokenization-en.md`。
 
+## Tokenization 动画
+
+CS336 文章中的 `tokenizationDemo: true` 与正文中的 `<!-- tokenization-demo -->` 标记启用 `TokenizationDemo.astro`，把动画插入正文。中英文共用一份数据，按钮与说明按文章语言切换。读者可以播放、暂停、前后单步、跳转阶段、重播，并点击最终 token、编号和词表片段查看对应关系；无脚本时仍显示完整结果。
+
+固定示例为 `I miss you, Larry.`，使用 `o200k_base` 的真实编号 `[40, 5141, 481, 11, 55320, 13]`。页面展示预切分、UTF-8 字节、分段内的 12 次 BPE 合并、词表查找和解码；小数字在字节阶段明确标为字节值，词表只显示本句相关的 6 个最终条目。动画展示使用固定词表编码，不是在输入句子上重新训练 tokenizer。
+
+`src/config/tokenization-demo.json` 是通过官方 `tiktoken==0.14.0` 校验生成的小型快照，浏览器不下载完整词表，也不调用模型服务。在安装了该 Python 包的临时环境中运行 `python scripts/generate-tokenization-demo.py` 可重新生成快照。`src/lib/tokenization-demo.ts` 生成动画状态，`tests/tokenization-demo.test.mjs` 校验原文、字节范围、合并边界和最终编号。动画仅在读者点击播放后开始，尊重系统减少动态效果的偏好，页面进入后台后暂停。
+
 ## 评论与点赞
 
 文章使用 [giscus](https://giscus.app/zh-CN)，评论和文章反应保存在 `oolong050309/oolong050309.github.io` 仓库的 GitHub Discussions 中。网站仍为静态生成，无需新增服务器、数据库或网站账号系统。

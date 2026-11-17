@@ -6,6 +6,7 @@ import { getAllPosts, formatDate } from '../../lib/content';
 import { site } from '../../config/site';
 import { categoryHref, subcategoryHref } from '../../config/categories';
 import Comments from '../../components/Comments.astro';
+import TokenizationDemo from '../../components/TokenizationDemo.astro';
 import 'katex/dist/katex.min.css';
 
 export function getStaticPaths() {
@@ -22,6 +23,8 @@ const headings = post.headings.filter(heading => heading.depth <= 3);
 const english = post.language === 'en';
 const categoryLabel = english ? ({ 学习笔记: 'Learning notes', 开发实践: 'Development', 研究笔记: 'Research notes', 随笔: 'Essays' }[post.category]) : post.category;
 const alternates = translations.length > 1 ? translations.map(item => ({ language: item.language, href: item.href })) : [];
+const demoParts = post.tokenizationDemo ? (await post.compiledContent()).split('<!-- tokenization-demo -->') : undefined;
+if (demoParts && demoParts.length !== 2) throw new Error('Article must contain exactly one tokenization demo marker: ' + post.slug);
 ---
 <BaseLayout title={`${post.title} · ${site.name}`} description={post.description} language={post.language} alternates={alternates} article>
   <a class="article-back" href={pageHref('/blog/')}><Icon name="arrow" size={16} />{english ? 'All articles' : '回到所有文章'}</a>
@@ -38,7 +41,7 @@ const alternates = translations.length > 1 ? translations.map(item => ({ languag
     <ul class="article-tags" aria-label={english ? 'Article tags' : '文章标签'}>{post.tags.map(tag => <li>{tag}</li>)}</ul>
   </header>
   <div class="article-layout">
-    <article class="prose" lang={post.language} data-translation-of={post.translationOf}><Content /></article>
+    <article class="prose" lang={post.language} data-translation-of={post.translationOf}>{demoParts ? <><Fragment set:html={demoParts[0]} /><TokenizationDemo language={post.language} /><Fragment set:html={demoParts[1]} /></> : <Content />}</article>
     <nav class="article-toc" aria-label={english ? 'Table of contents' : '文章目录'}><h2>{english ? 'Contents' : '目录'}</h2>{headings.map(heading => <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>{heading.text}</a>)}</nav>
   </div>
   <Comments language={post.language} discussionPath={post.translationOf ? `/blog/${post.translationOf}/` : undefined} />

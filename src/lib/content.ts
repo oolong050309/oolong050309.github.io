@@ -14,6 +14,7 @@ export interface PostMeta {
   sample: boolean;
   language?: 'zh-CN' | 'en';
   translationOf?: string;
+  tokenizationDemo?: boolean;
 }
 
 const files = import.meta.glob<MarkdownInstance<PostMeta>>('../content/blog/*.md', { eager: true });
@@ -36,6 +37,7 @@ export function getAllPosts() {
         tags: [...new Set([post.topic, ...(Array.isArray(post.tags) ? post.tags : [])].filter(tag => typeof tag === 'string' && tag.trim()))],
         href: `/blog/${post.slug}/`,
         Content: file.Content,
+        compiledContent: file.compiledContent,
         headings: file.getHeadings(),
       };
     })
