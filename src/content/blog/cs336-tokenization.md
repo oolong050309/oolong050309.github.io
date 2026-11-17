@@ -36,8 +36,6 @@ decode：token ID 序列 → 文本
 
 ### 看一句话如何变成 token
 
-以 “I miss you, Larry.” 为例，可以逐步查看从原文、预切分、字节合并到 token 编号的过程。最终 token 中显示的 ␠ 代表原有空格；它也是词表条目的一部分。
-
 <!-- tokenization-demo -->
 
 ## 字符和字节，为什么要分清？

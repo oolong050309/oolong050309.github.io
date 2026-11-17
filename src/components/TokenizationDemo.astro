@@ -1,133 +1,52 @@
 ---
-import { tokenizationTrace as trace, visibleSpaces } from '../lib/tokenization-demo';
+import { tokenizationTrace as trace, wordLevelTokens, wordLevelVocabulary, visibleSpaces } from '../lib/tokenization-demo';
+import '../styles/tokenization-animation.css';
 
 interface Props { language?: 'zh-CN' | 'en'; }
 const { language = 'zh-CN' } = Astro.props;
 const english = language === 'en';
+const phases = english
+  ? [{ phase: 0, label: 'Text' }, { phase: 1, label: 'Words' }, { phase: 4, label: 'Token IDs' }, { phase: 5, label: 'Decode' }]
+  : [{ phase: 0, label: '原文' }, { phase: 1, label: '按词切分' }, { phase: 4, label: '编号' }, { phase: 5, label: '还原' }];
 ---
-<section class="token-demo" id="tokenization-demo" data-tokenization-demo data-language={language} aria-label={english ? 'Animated tokenization walkthrough' : 'Tokenization 动画演示'}>
-  <div class="demo-topline">
-    <span>{english ? 'ONE SENTENCE, STEP BY STEP' : '一句话，一步步看'}</span>
-    <span class="demo-encoding">{trace.encoding}</span>
+<section class="token-animation" id="tokenization-demo" data-tokenization-demo data-mode="word" data-language={language} aria-label={english ? 'Tokenization animation' : 'Tokenization 动画'}>
+  <div class="modes" role="group" aria-label={english ? 'Tokenization method' : '分词方式'} hidden>
+    <button type="button" data-tokenizer-mode="word" aria-pressed="true">{english ? 'Word-level' : '单词级'}</button>
+    <button type="button" data-tokenizer-mode="bpe" aria-pressed="false">BPE（o200k_base）</button>
   </div>
-  <p class="demo-input" lang="en">{trace.text}</p>
-  <p class="demo-intro">{english ? 'Use an already trained vocabulary to encode this sentence. The vocabulary is fixed; this is not tokenizer training.' : '使用已训练好的词表编码这句话。词表已经固定，这里展示编码过程。'}</p>
-
-  <div class="demo-controls" data-demo-controls hidden>
-    <button type="button" class="demo-play" data-demo-play aria-pressed="false">{english ? 'Play' : '播放'}</button>
-    <button type="button" data-demo-prev>{english ? 'Previous' : '上一步'}</button>
-    <button type="button" data-demo-next>{english ? 'Next' : '下一步'}</button>
-    <button type="button" class="demo-reset" data-demo-reset>{english ? 'Restart' : '重置'}</button>
-    <span class="demo-counter" data-demo-counter></span>
-  </div>
-  <ol class="demo-phases" data-demo-phases hidden>
-    {(english ? ['Text', 'Segments', 'UTF-8', 'BPE merges', 'Token IDs', 'Decode'] : ['原文', '预切分', 'UTF-8 字节', 'BPE 合并', '编号', '还原文本']).map((label, index) => <li><button type="button" data-demo-phase={index}><span aria-hidden="true">{index + 1}</span>{label}</button></li>)}
-  </ol>
-
-  <div class="demo-narration">
-    <p class="demo-stage-title" data-demo-title>{english ? 'From IDs back to the original text' : '从编号还原原文'}</p>
-    <p data-demo-description>{english ? 'Look up the bytes for each ID, concatenate them, and decode as UTF-8.' : '按编号查出对应字节，拼接后进行 UTF-8 解码，就能还原原文。'}</p>
-  </div>
-  <div class="demo-board">
-    <div class="demo-workbench">
-      <div class="demo-label-row"><span data-demo-representation>{english ? 'Final tokens' : '最终 token'}</span><span data-demo-piece-count>{trace.tokens.length} tokens</span></div>
-      <div class="demo-pieces" data-demo-pieces>
-        {trace.tokens.map(token => <div class="demo-piece-group"><button type="button" class="demo-piece" data-piece-key={token.start + ':' + token.end} data-demo-token={token.id} disabled><span>{visibleSpaces(token.text)}</span></button></div>)}
-      </div>
-      <p class="demo-space-note">{english ? '␠ marks an existing space; it adds no character.' : '␠ 表示原有的空格，不是额外添加的字符。'}</p>
-      <div class="demo-lookup" data-demo-lookup hidden>
-        <span>{english ? 'Current vocabulary entry' : '当前词表条目'}</span>
-        <div><span data-demo-lookup-text></span><span aria-hidden="true">↔</span><span class="demo-lookup-id" data-demo-lookup-id></span></div>
-      </div>
+  <div class="original"><p lang="en">{trace.text}</p><span class="encoding" id="encoding-note">{english ? 'Illustrative IDs' : '示例编号'}</span></div>
+  <nav class="phases" aria-label={english ? 'Animation stages' : '动画阶段'} hidden>
+    {phases.map(({ phase, label }) => <button type="button" data-phase={phase}>{label}</button>)}
+  </nav>
+  <p class="byte-note" id="byte-note" hidden>{english ? 'Small numbers are UTF-8 byte values.' : '下方小数字为 UTF-8 字节值。'}</p>
+  <div class="board">
+    <div class="workbench">
+      <p id="fallback" class="fallback">{wordLevelTokens.map(token => visibleSpaces(token.text)).join('  |  ')}</p>
+      <svg id="stage-svg" xmlns="http://www.w3.org/2000/svg" role="group" aria-label={english ? 'Text pieces' : '文本片段'} data-pending></svg>
+      <div class="merge-equation" id="merge-equation" hidden></div>
+      <div class="lookup" id="lookup" hidden><strong id="lookup-token"></strong><span aria-hidden="true">→</span><strong id="lookup-id"></strong></div>
     </div>
-    <div class="demo-vocabulary">
-      <p class="demo-label">{english ? 'Vocabulary excerpt' : '词表片段'}</p>
-      <p class="demo-vocab-note">{english ? 'Only the six entries used in this sentence.' : '仅展示本句最终用到的 6 个条目。'}</p>
-      <table>
-        <thead><tr><th scope="col">{english ? 'Token bytes' : 'Token 字节片段'}</th><th scope="col">ID</th></tr></thead>
-        <tbody>{trace.tokens.map(token => <tr data-demo-vocab-row={token.id}><td><button type="button" data-demo-vocab={token.id} disabled>{visibleSpaces(token.text)}</button></td><td>{token.id}</td></tr>)}</tbody>
+    <aside class="vocabulary">
+      <table aria-label={english ? 'Vocabulary excerpt' : '词表节选'}>
+        <thead><tr><th scope="col">Token</th><th scope="col">ID</th></tr></thead>
+        <tbody id="vocab-rows">{wordLevelVocabulary.map(token => <tr><td>{visibleSpaces(token.text)}</td><td>{token.id}</td></tr>)}</tbody>
       </table>
-    </div>
+    </aside>
   </div>
-  <div class="demo-result" data-demo-result>
-    <p class="demo-label">{english ? 'Encoded sequence' : '编码后的序列'}</p>
-    <div class="demo-ids" aria-label={english ? 'Token IDs in sequence order' : '按序排列的 token 编号'}>
-      <span aria-hidden="true">[</span>
-      {trace.tokens.map((token, index) => <><button type="button" data-demo-id={token.id} disabled>{token.id}</button>{index < trace.tokens.length - 1 && <span aria-hidden="true">,</span>}</>)}
-      <span aria-hidden="true">]</span>
-    </div>
+  <p class="space-note" id="space-note">{english ? '␣ marks a space in the original text. Spaces and punctuation are kept as separate tokens here.' : '␣ 表示原文中的一个空格，这里将空格和标点单独保留。'}</p>
+  <div class="sequence" id="sequence" aria-label={english ? 'Token ID sequence' : 'Token 编号序列'}>
+    <div class="id-sequence" id="id-sequence">[{wordLevelTokens.map(token => token.id).join(', ')}]</div>
   </div>
-  <div class="demo-decoded" data-demo-decoded>
-    <span>{english ? 'Decoded' : '解码后'}</span><span lang="en">{trace.text}</span><span class="demo-roundtrip">{english ? 'Original text recovered' : '与原文一致'}</span>
+  <div class="decoded" id="decoded" hidden><span aria-hidden="true">↳</span><strong lang="en">{trace.text}</strong></div>
+  <div class="controls" hidden>
+    <button type="button" id="play" class="primary" aria-pressed="false">{english ? 'Play' : '播放'}</button>
+    <button type="button" id="previous">{english ? 'Previous' : '上一步'}</button>
+    <button type="button" id="next">{english ? 'Next' : '下一步'}</button>
+    <button type="button" id="restart" class="quiet">{english ? 'Restart' : '重来'}</button>
+    <label class="sr-only" for="progress">{english ? 'Animation step' : '动画步骤'}</label>
+    <input id="progress" type="range" min="0" max="11" value="0" step="1" />
   </div>
-  <p class="demo-status sr-only" data-demo-status aria-live="polite" aria-atomic="true"></p>
-  <noscript><p class="demo-noscript">{english ? 'Enable JavaScript to play the animation. The complete tokens, IDs, and vocabulary excerpt are shown above.' : '启用 JavaScript 即可播放动画；上方仍可直接阅读完整 token、编号和词表片段。'}</p></noscript>
+  <p class="sr-only" id="status" role="status" aria-live="polite" aria-atomic="true"></p>
 </section>
 
 <script src="../scripts/tokenization-demo.ts"></script>
-
-<style>
-  .token-demo { margin-block: 28px; border: 1px solid #dededb; border-radius: 8px; padding: 22px; background: #fcfcfb; font-size: 14px; line-height: 1.75; scroll-margin-top: 24px; }
-  .demo-topline { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 8px; color: #747474; font-size: 11px; letter-spacing: .06em; }
-  .demo-encoding { font-family: var(--mono); letter-spacing: 0; }
-  .token-demo .demo-input { margin: 12px 0 8px; font: 24px/1.6 var(--mono); color: var(--text); letter-spacing: -.04em; }
-  .token-demo .demo-intro { margin: 0; color: #666; font-size: 13px; line-height: 1.8; }
-  .demo-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 20px; }
-  .demo-controls button { padding: 6px 11px; min-height: 34px; border: 1px solid #d8d8d5; border-radius: 4px; font-size: 12px; background: #fff; transition: background 150ms; }
-  .demo-controls .demo-play { background: #252525; border-color: #252525; color: #fff; min-width: 62px; }
-  .demo-controls button:enabled:hover { background: #eaeae7; }
-  .demo-controls .demo-play:enabled:hover { background: #454545; }
-  .demo-controls button:disabled { opacity: .35; cursor: default; }
-  .demo-controls .demo-reset { border-color: transparent; background: transparent; }
-  .demo-counter { margin-left: auto; font: 11px/1.6 var(--mono); color: #777; }
-  .token-demo .demo-phases { list-style: none; padding: 0; margin: 18px 0 0; display: flex; flex-wrap: wrap; gap: 6px 12px; }
-  .token-demo .demo-phases li { margin: 0; }
-  .demo-phases button { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; line-height: 1.8; padding: 4px 0; color: #858585; border-bottom: 1px solid transparent; }
-  .demo-phases button > span { font-family: var(--mono); font-size: 10px; opacity: .7; }
-  .demo-phases button[aria-current='step'] { color: #222; border-color: #222; font-weight: 600; }
-  .demo-narration { margin: 18px 0; padding-top: 17px; border-top: 1px solid #e5e5e0; min-height: 112px; }
-  .token-demo .demo-narration p { margin: 0; }
-  .token-demo .demo-narration .demo-stage-title { font-weight: 600; font-size: 15px; margin-bottom: 6px; color: #292929; }
-  .token-demo .demo-narration p + p { font-size: 13px; line-height: 1.8; color: #666; }
-  .demo-board { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 20px; }
-  .demo-workbench { min-width: 0; position: relative; }
-  .demo-label-row { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; gap: 8px; }
-  .demo-label-row, .token-demo .demo-label { font-size: 11px; color: #747474; margin: 0; }
-  .demo-label-row > :last-child { font-family: var(--mono); }
-  .demo-pieces { display: flex; flex-wrap: wrap; align-content: flex-start; align-items: flex-start; gap: 13px 14px; padding: 14px 0 4px; min-height: 150px; }
-  .token-demo :global(.demo-piece-group) { display: flex; flex-wrap: wrap; gap: 3px; align-items: flex-start; }
-  .token-demo :global(.demo-piece) { position: relative; display: inline-flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px; min-height: 38px; min-width: 27px; padding: 6px 9px; border: 1px solid #d8d8d2; border-radius: 4px; font: 15px/1.5 var(--mono); background: #fff; color: #333; white-space: pre; }
-  .token-demo :global(.demo-piece:disabled) { cursor: default; opacity: 1; }
-  .token-demo :global(.demo-piece small) { color: #888; font: 10px/1.5 var(--mono); }
-  .token-demo :global(.demo-piece.is-current), .token-demo :global(.demo-piece[aria-pressed='true']) { border-color: #333; background: #eaeae5; color: #111; }
-  .token-demo :global(.demo-piece-ghost) { position: absolute; z-index: 2; pointer-events: none; margin: 0; }
-  .token-demo :global(.demo-piece-raw) { border-color: transparent; background: transparent; padding-inline: 0; font-size: 17px; }
-  .token-demo .demo-space-note { margin: 8px 0 0; font-size: 11px; line-height: 1.8; color: #777; }
-  .demo-lookup { margin-top: 18px; padding: 12px 0 0; border-top: 1px dashed #deded6; }
-  .demo-lookup > span { color: #777; font-size: 11px; }
-  .demo-lookup > div { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 5px; font-family: var(--mono); }
-  .demo-lookup-id { color: #555; font-size: 13px; }
-  .demo-vocabulary { min-width: 0; border-left: 1px solid #e5e5e0; padding-left: 16px; }
-  .token-demo .demo-vocab-note { font-size: 11px; line-height: 1.7; color: #888; margin: 4px 0 10px; }
-  .token-demo table { margin: 0; font-size: 12px; line-height: 1.7; }
-  .token-demo th { color: #888; font-size: 10px; font-weight: 400; background: transparent; }
-  .token-demo th, .token-demo td { padding: 6px 4px; border-color: #e9e9e3; }
-  .token-demo th:last-child, .token-demo td:last-child { text-align: right; font-family: var(--mono); }
-  .demo-vocabulary td:first-child { font-family: var(--mono); }
-  .demo-vocabulary button { padding: 1px 0; white-space: pre; width: 100%; text-align: left; font: inherit; }
-  .demo-vocabulary button:disabled { cursor: default; }
-  .demo-vocabulary tr.is-selected td { background: #eaeae5; color: #111; }
-  .demo-result { margin-top: 20px; padding-top: 14px; border-top: 1px solid #e5e5e0; }
-  .demo-ids { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin-top: 8px; font: 13px/1.8 var(--mono); }
-  .demo-ids button { padding: 2px 5px; border-radius: 3px; font: inherit; }
-  .demo-ids button:disabled { cursor: default; }
-  .demo-ids button[aria-pressed='true'] { background: #252525; color: #fff; }
-  .demo-decoded { display: flex; align-items: baseline; flex-wrap: wrap; gap: 5px 12px; margin-top: 16px; padding-top: 14px; border-top: 1px solid #e5e5e0; font-size: 12px; }
-  .demo-decoded > :first-child { font-size: 11px; color: #777; }
-  .demo-decoded > [lang] { font-family: var(--mono); font-size: 15px; }
-  .demo-roundtrip { margin-left: auto; color: #777; font-size: 11px; }
-  .token-demo .demo-noscript { margin: 16px 0 0; color: #777; font-size: 12px; }
-  @media (max-width: 1050px) { .demo-board { grid-template-columns: minmax(0, 1fr); gap: 20px; } .demo-vocabulary { border-left: 0; padding-left: 0; border-top: 1px solid #e5e5e0; padding-top: 14px; } .demo-pieces { min-height: 100px; } }
-  @media (max-width: 600px) { .token-demo { padding: 16px; } .token-demo .demo-input { font-size: 21px; } .demo-counter { margin-left: 0; } .demo-narration { min-height: 0; } }
-  @media (pointer: coarse) { .demo-controls button, .demo-phases button, .demo-ids button { min-height: 44px; } }
-</style>

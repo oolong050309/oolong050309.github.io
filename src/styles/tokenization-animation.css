@@ -1,0 +1,83 @@
+.token-animation {
+  --animation-ink: #252525;
+  --animation-muted: #747474;
+  --animation-line: #dedede;
+  --animation-accent: #252525;
+  container-type: inline-size;
+  margin-block: 24px;
+  padding: 18px;
+  border: 1px solid var(--animation-line);
+  border-radius: 8px;
+  background: #fcfcfc;
+  color: var(--animation-ink);
+  font-size: 13px;
+  line-height: 1.6;
+  scroll-margin-top: 24px;
+}
+.token-animation [hidden] { display: none !important; }
+.token-animation button { cursor: pointer; font: inherit; }
+.token-animation button:disabled { cursor: default; opacity: .35; }
+.token-animation button:focus-visible, .token-animation input:focus-visible, .token-animation [role="button"]:focus-visible { outline: 2px solid var(--animation-accent); outline-offset: 3px; }
+.token-animation .modes { display: inline-flex; flex-wrap: wrap; gap: 3px; padding: 3px; margin-bottom: 16px; border: 1px solid var(--animation-line); border-radius: 6px; background: #f3f3f3; }
+.token-animation .modes button { padding: 5px 11px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--animation-muted); font-size: 12px; }
+.token-animation .modes button[aria-pressed="true"] { border-color: #d4d4d4; background: #fff; color: var(--animation-ink); }
+.token-animation .original { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.token-animation .original p { margin: 0; font: 24px/1.6 var(--mono); letter-spacing: -.04em; }
+.token-animation .encoding { color: var(--animation-muted); font: 10px var(--mono); }
+.token-animation .phases { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 5px 12px; margin-top: 14px; border-bottom: 1px solid var(--animation-line); }
+.token-animation .phases button { padding: 7px 0; border: 0; border-bottom: 1px solid transparent; background: none; color: var(--animation-muted); font-size: 11px; }
+.token-animation .phases button[aria-current="step"] { color: var(--animation-accent); border-color: currentColor; }
+.token-animation .board { display: grid; grid-template-columns: minmax(0, 1fr) 155px; gap: 18px; padding-top: 15px; }
+.token-animation .workbench { min-width: 0; align-self: center; }
+.token-animation #stage-svg { display: block; width: 100%; overflow: visible; }
+.token-animation #stage-svg[data-pending] { display: none; }
+.token-animation .piece-label { font: 22px var(--mono); dominant-baseline: central; text-anchor: middle; }
+.token-animation .piece-byte { font: 12px var(--mono); fill: var(--animation-muted); dominant-baseline: central; text-anchor: middle; }
+.token-animation .piece[role="button"] { cursor: pointer; }
+.token-animation .piece[role="button"]:hover rect, .token-animation .piece.selected rect { stroke-width: 2.5; }
+.token-animation .piece.current rect { stroke-width: 2.3; }
+.token-animation .piece.current rect, .token-animation .piece.selected rect { stroke: #252525; fill: #ededed; }
+.token-animation .byte-note { margin: 12px 0 0; color: var(--animation-muted); font-size: 11px; }
+.token-animation .merge-equation { padding: 5px 0; text-align: center; font: 13px/1.7 var(--mono); color: var(--animation-accent); }
+.token-animation .lookup { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; padding: 5px 0; color: var(--selected-color, var(--animation-accent)); }
+.token-animation .lookup strong { font: 18px var(--mono); }
+.token-animation .vocabulary { padding-left: 14px; border-left: 1px solid var(--animation-line); }
+.token-animation .vocabulary table { width: 100%; margin: 0; border-collapse: collapse; table-layout: fixed; font: 12px/1.6 var(--mono); }
+.token-animation .vocabulary th, .token-animation .vocabulary td { padding: 6px 4px; border-bottom: 1px solid #e7e7e7; text-align: left; vertical-align: middle; }
+.token-animation .vocabulary th { color: var(--animation-muted); background: transparent; font-size: 10px; font-weight: 400; }
+.token-animation .vocabulary th:last-child, .token-animation .vocabulary td:last-child { text-align: right; }
+.token-animation .vocabulary td { transition: background 200ms; }
+.token-animation .vocabulary td button { width: 100%; padding: 1px 0; border: 0; background: none; color: inherit; text-align: inherit; font: inherit; opacity: 1; }
+.token-animation .vocabulary tr.is-selected td { background: #ededed; color: var(--animation-ink); }
+.token-animation .space-note { margin: 8px 0 0; color: var(--animation-muted); font-size: 11px; }
+.token-animation .sequence { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--animation-line); }
+.token-animation .id-sequence { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 4px; font: 14px/1.8 var(--mono); }
+.token-animation .id-sequence > span { color: #9c9c9c; }
+.token-animation .id-chip { min-width: 30px; padding: 4px 7px; border: 1px solid transparent; border-radius: 4px; background: #f3f3f3; color: var(--animation-ink); font: inherit; }
+.token-animation .id-chip[aria-pressed="true"] { border-color: currentColor; }
+.token-animation .id-chip:disabled { border: 1px dashed var(--animation-line); background: transparent; color: var(--animation-muted); }
+.token-animation .decoded { display: flex; justify-content: center; align-items: baseline; gap: 10px; margin-top: 12px; color: var(--animation-muted); }
+.token-animation .decoded strong { font: 16px var(--mono); }
+.token-animation .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--animation-line); }
+.token-animation .controls button { min-height: 32px; padding: 5px 9px; border: 1px solid var(--animation-line); border-radius: 4px; background: #fff; color: var(--animation-ink); font-size: 11px; }
+.token-animation .controls button:enabled:hover { background: #eee; }
+.token-animation .controls .primary { min-width: 52px; border-color: var(--animation-ink); background: var(--animation-ink); color: #fff; }
+.token-animation .controls .primary:enabled:hover { background: #454545; }
+.token-animation .controls .quiet { border-color: transparent; background: transparent; color: var(--animation-muted); }
+.token-animation .controls input { min-width: 90px; width: 90px; flex: 1; margin: 0 0 0 5px; accent-color: var(--animation-accent); cursor: pointer; }
+.token-animation .fallback { margin: 25px 0; font: 14px/1.8 var(--mono); }
+.token-animation-flight { position: fixed; z-index: 20; pointer-events: none; padding: 3px 7px; border-radius: 4px; background: #fcfcfc; color: #252525; font: 17px var(--mono); }
+@container (max-width: 470px) {
+  .token-animation .board { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .token-animation .vocabulary { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--animation-line); }
+}
+@media (max-width: 600px) {
+  .token-animation { padding: 14px; }
+  .token-animation .original p { font-size: 21px; }
+}
+@media (pointer: coarse) {
+  .token-animation .controls button, .token-animation .phases button, .token-animation .modes button, .token-animation .vocabulary td button { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .token-animation * { transition: none !important; }
+}

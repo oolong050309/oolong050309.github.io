@@ -37,8 +37,6 @@ For a pipeline that does not otherwise alter the input, encoding and then decodi
 
 ### Watch a sentence become tokens
 
-Follow “I miss you, Larry.” from the original text through pre-tokenization and byte merges to token IDs. The ␠ symbol in the final tokens represents an existing space, which is also part of the vocabulary entry.
-
 <!-- tokenization-demo -->
 
 ## Characters and bytes are different units

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { makeTokenizationFrames, tokenizationTrace as trace, pieceKey } from '../src/lib/tokenization-demo.ts';
+import { makeTokenizationFrames, makeTokenizationAnimation, tokenizationTrace as trace, pieceKey } from '../src/lib/tokenization-demo.ts';
 
 test('the demo preserves the original bytes, spaces and punctuation at every step', () => {
   const bytes = new TextEncoder().encode(trace.text);
@@ -50,4 +50,39 @@ test('final IDs match the official o200k_base fixture and cannot be confused wit
   assert.equal(trace.tokens[0].id, 40);
   assert.equal(frames.at(-1).phase, 'decode');
   assert.deepEqual(frames.at(-1).pieces, final.pieces);
+});
+
+test('the word-level example preserves whole words, punctuation and every space', () => {
+  const { tokens, vocabulary, frames } = makeTokenizationAnimation('word');
+  assert.deepEqual(tokens.map(token => token.text), ['I', ' ', 'miss', ' ', 'you', ',', ' ', 'Larry', '.']);
+  assert.deepEqual(tokens.map(token => token.id), [1, 2, 3, 2, 4, 5, 2, 6, 7]);
+  assert.equal(vocabulary.length, 7);
+  assert.equal(new Set(vocabulary.map(token => token.id)).size, vocabulary.length);
+  assert.equal(frames.some(frame => frame.phase === 2 || frame.merge), false);
+  for (const token of tokens) {
+    assert.equal(vocabulary.find(entry => entry.id === token.id).text, token.text);
+  }
+});
+
+test('both animation modes preserve the text and look up each occurrence in sequence order', () => {
+  for (const mode of ['word', 'bpe']) {
+    const { tokens, vocabulary, frames, lookupStart } = makeTokenizationAnimation(mode);
+    for (const frame of frames) {
+      const pieces = frame.groups.flat();
+      assert.equal(pieces.map(piece => piece.text).join(''), trace.text);
+      let offset = 0;
+      for (const piece of pieces) {
+        assert.equal(piece.start, offset);
+        offset = piece.end;
+      }
+      assert.equal(offset, trace.bytes.length);
+    }
+    const lookups = frames.filter(frame => frame.phase === 4);
+    assert.deepEqual(lookups.map(frame => frame.lookupIndex), tokens.map((_token, index) => index));
+    assert.equal(frames[lookupStart], lookups[0]);
+    const decoded = frames.at(-1).groups.flat().map(piece =>
+      vocabulary.find(entry => entry.id === piece.id).text).join('');
+    assert.equal(decoded, trace.text);
+  }
+  assert.deepEqual(makeTokenizationAnimation('bpe').tokens, trace.tokens);
 });
