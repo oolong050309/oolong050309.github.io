@@ -1,0 +1,403 @@
+---
+title: "Unicode: From Code Points and UTF-8 to Emoji"
+slug: "unicode-en"
+description: "Distinguish characters, code points, code units and bytes; work through UTF-8, UTF-16 surrogate pairs, Emoji, normalization and decoding errors."
+publishedAt: "2026-11-17T14:00:00+08:00"
+category: "学习笔记"
+topic: "Character encoding"
+tags: ["Unicode", "UTF-8", "UTF-16", "UTF-32", "Code point", "Emoji", "Character encoding"]
+minutes: 16
+sample: false
+language: "en"
+translationOf: "unicode"
+---
+
+[ASCII](/blog/ascii-en/) assigns shared values to English letters, digits, and control functions. Everyday text, however, can combine English, Chinese, mathematical symbols, and Emoji. Exchanging this text requires conventions that work across writing systems.
+
+Unicode defines code points, names, character properties, and text-processing rules. It also defines encoding forms such as UTF-8, UTF-16, and UTF-32. A concrete way to understand the layers is to follow <strong>characters to code points, code points to bytes, and bytes back to text</strong>.
+
+## Characters, code points, code units, and glyphs
+
+These terms describe different parts of the process:
+
+| Term | What it describes | Example |
+| --- | --- | --- |
+| Character | An abstract element with an identity in text | Latin A or the character 猫 |
+| Code point | A numerical position in the Unicode codespace | `U+0041` or `U+732B` |
+| Code unit | The basic unit used by an encoding form | An eight-bit UTF-8 unit or a 16-bit UTF-16 unit |
+| Byte | An eight-bit data unit in this article | The hexadecimal byte `E7` |
+| Glyph | A shape drawn by a font and rendering system | The appearance of A in a particular font |
+| Grapheme cluster | A text unit grouped by segmentation rules | A letter with a combining accent, or certain Emoji sequences |
+
+For example, 猫 has code point `U+732B`. UTF-8 represents it with the bytes `E7 8C AB`. Drawing it on screen additionally requires a font and a rendering system.
+
+For simple English text, several of these quantities happen to coincide. Combining characters and Emoji expose the differences.
+
+## Writing a code point
+
+Unicode commonly writes a code point as `U+` followed by a hexadecimal value:
+
+| Text | Code point | Decimal value |
+| --- | --- | ---: |
+| `A` | `U+0041` | 65 |
+| `猫` | `U+732B` | 29483 |
+| `😀` | `U+1F600` | 128512 |
+
+`U+732B` denotes the position whose hexadecimal value is 732B. The number of symbols used to write that notation does not determine how many bytes an encoding needs.
+
+Python can display code points and names:
+
+```python
+import unicodedata
+
+for ch in ["A", "猫", "😀"]:
+    print(ch, f"U+{ord(ch):04X}", unicodedata.name(ch))
+```
+
+Unicode’s codespace ranges from `U+0000` to `U+10FFFF`. It is divided into 17 planes of 65,536 positions each. Plane 0 is the Basic Multilingual Plane, or BMP; the remaining planes are supplementary planes.
+
+The space contains assigned positions, unassigned positions, and positions with special purposes. Its capacity and the number of assigned characters are different quantities. `U+D800`–`U+DFFF` is the surrogate range. A <strong>Unicode scalar value</strong> is a code point value outside that range. Valid UTF encoding of individual values concerns these scalar values.
+
+Unicode preserves the first 128 ASCII values. Thus `ord("A")` returns 65, corresponding both to its ASCII value and to `U+0041`. The result of `ord("猫")` lies beyond ASCII’s repertoire.
+
+## How Unicode and the UTFs fit together
+
+A code point still needs a representation when text is saved or transmitted. Unicode defines three common encoding forms:
+
+- <strong>UTF-8:</strong> eight-bit code units; one scalar value uses one to four units.
+- <strong>UTF-16:</strong> 16-bit code units; one scalar value uses one or two units.
+- <strong>UTF-32:</strong> 32-bit code units; one scalar value uses one unit.
+
+The numbers 8, 16, and 32 describe the width of a code unit. Serializing multi-byte code units also requires a byte-order convention.
+
+The same 猫 can consequently have different byte representations:
+
+| Encoding scheme | Bytes, without a BOM |
+| --- | --- |
+| UTF-8 | `E7 8C AB` |
+| UTF-16BE | `73 2B` |
+| UTF-16LE | `2B 73` |
+| UTF-32BE | `00 00 73 2B` |
+
+Decoding each representation with its corresponding rules recovers the same code point.
+
+## UTF-8
+
+UTF-8 uses different sequence lengths for different scalar-value ranges. The first byte contains structural information, and continuation bytes start with the bits `10`:
+
+| Code point range | Bytes | Bit structure |
+| --- | ---: | --- |
+| `U+0000`–`U+007F` | 1 | `0xxxxxxx` |
+| `U+0080`–`U+07FF` | 2 | `110xxxxx 10xxxxxx` |
+| `U+0800`–`U+FFFF`, excluding surrogates | 3 | `1110xxxx 10xxxxxx 10xxxxxx` |
+| `U+10000`–`U+10FFFF` | 4 | `11110xxx 10xxxxxx 10xxxxxx 10xxxxxx` |
+
+Each x carries a bit of the code point value. The fixed prefixes identify the structure. Valid encoding also requires the appropriate range and shortest representation, so the prefixes alone are insufficient for validation.
+
+### Start with ASCII
+
+A has code point `U+0041` and uses one byte:
+
+```text
+U+0041 → 01000001 → 41
+```
+
+This is exactly its ASCII byte. Every ASCII-range character has the same property: a valid ASCII byte sequence is also valid UTF-8 for the same text.
+
+### Work through 猫 by hand
+
+猫 has code point `U+732B`, which falls in the three-byte range. First, write its value in binary:
+
+```text
+0x732B → 0111 0011 0010 1011
+```
+
+The three-byte pattern has 4 + 6 + 6 payload bits. Group the value accordingly:
+
+```text
+0111 | 001100 | 101011
+```
+
+Insert those groups into the fixed structure:
+
+```text
+1110 + 0111   → 11100111
+10   + 001100 → 10001100
+10   + 101011 → 10101011
+```
+
+The result is:
+
+```text
+Binary:              11100111 10001100 10101011
+Hexadecimal:         E7 8C AB
+Decimal byte values: [231, 140, 171]
+```
+
+Verify it with the standard library:
+
+```python
+text = "猫"
+raw = text.encode("utf-8")
+
+print(ord(text))           # 29483
+print(raw.hex(" "))        # e7 8c ab
+print(list(raw))           # [231, 140, 171]
+print(raw.decode("utf-8")) # 猫
+```
+
+29483 is the decimal code point value. The numbers 231, 140, and 171 are the values of the resulting individual bytes.
+
+### Four bytes and decoding
+
+The code point of `😀` is `U+1F600`, requiring four UTF-8 bytes:
+
+```text
+U+1F600
+→ 11110000 10011111 10011000 10000000
+→ F0 9F 98 80
+```
+
+Decoding identifies the leading byte, reads the required continuation bytes, validates the sequence, and combines the payload bits to recover the code point.
+
+The question “How many bytes does a Chinese character use?” therefore needs both an encoding and a specific character. Many common Han characters use three UTF-8 bytes; supplementary-plane Han characters use four.
+
+### Can every byte fragment be decoded?
+
+A continuation byte of the form `10xxxxxx` cannot start a character by itself. A three-byte sequence may arrive with only its first two bytes. Overlong representations, surrogate values, and values above `U+10FFFF` are also invalid in UTF-8.
+
+File and network chunks can end in the middle of a character. An incremental decoder keeps an incomplete sequence until the remaining bytes arrive. Slicing by arbitrary byte positions can therefore produce fragments that cannot be decoded independently.
+
+## UTF-16 and surrogate pairs
+
+UTF-16 uses 16-bit code units. A scalar value in the BMP uses one unit. A supplementary scalar value uses two units, known as a <strong>surrogate pair</strong>.
+
+For `😀`:
+
+```text
+U+1F600 → D83D DE00
+```
+
+To calculate the pair, first subtract `0x10000`:
+
+```text
+0x1F600 - 0x10000 = 0xF600
+```
+
+Split this result into two groups of ten bits. Add the high group to `0xD800` and the low group to `0xDC00`, producing `D83D` and `DE00`. Together, the two code units represent the original scalar value.
+
+A code point consequently uses either two or four UTF-16 bytes. Taking only half of a surrogate pair produces an incomplete representation.
+
+### Byte order and BOM
+
+A 16-bit code unit has two bytes. Big-endian, or BE, places the high byte first. Little-endian, or LE, places the low byte first. For `0x732B`:
+
+```text
+UTF-16BE: 73 2B
+UTF-16LE: 2B 73
+```
+
+The code units of a surrogate pair remain in their logical order. Byte order determines the byte arrangement within each unit. Thus `D83D DE00` becomes `3D D8 00 DE` in UTF-16LE.
+
+A Byte Order Mark, or BOM, uses `U+FEFF` as an initial marker. Its bytes are `FE FF` in UTF-16BE and `FF FE` in UTF-16LE, allowing a reader to identify the byte order.
+
+UTF-8 can also carry the BOM bytes `EF BB BF`. Because a UTF-8 code unit is one byte, this marker acts as an encoding signature rather than choosing an endianness. Whether a format uses, accepts, or ignores a BOM depends on that format and its parser.
+
+## UTF-32 and representation size
+
+UTF-32 represents each Unicode scalar value with one 32-bit code unit, or four bytes. Code point and code unit counts therefore coincide for valid scalar-value sequences. A visible text unit made of several code points still requires several UTF-32 units.
+
+Compare the encoded byte counts:
+
+| Text | UTF-8 | UTF-16 | UTF-32 |
+| --- | ---: | ---: | ---: |
+| `A` | 1 | 2 | 4 |
+| `猫` | 3 | 2 | 4 |
+| `😀` | 4 | 4 | 4 |
+| `ABC猫` | 6 | 8 | 16 |
+
+These counts exclude a BOM, language-object overhead, and any file-format or protocol metadata.
+
+All three forms can represent the same Unicode scalar-value sequence. Their size trade-offs depend on the text, while processing costs also depend on the application.
+
+## One visible character can contain several code points
+
+The letter `é` can use the single code point `U+00E9` or a sequence consisting of e and a combining acute accent:
+
+```text
+U+0065 + U+0301
+```
+
+These sequences can look the same while having different code point counts and bytes.
+
+Emoji provide another example. `👩‍💻` contains three code points:
+
+```text
+U+1F469  WOMAN
+U+200D   ZERO WIDTH JOINER
+U+1F4BB  PERSONAL COMPUTER
+```
+
+A supporting font and rendering environment can display the sequence as a combined Emoji. Skin-tone modifiers, variation selectors, and flag sequences add further relationships between appearance and code point sequences.
+
+Unicode’s <strong>extended grapheme cluster</strong> rules provide boundaries useful for operations such as cursor movement and truncation. Grapheme clusters are text-processing units. Their count does not necessarily equal the glyph count or the width on screen.
+
+The following quantities can all be correct:
+
+| Text | UTF-8 bytes | Code points | UTF-16 code units | Default extended grapheme clusters |
+| --- | ---: | ---: | ---: | ---: |
+| `A` | 1 | 1 | 1 | 1 |
+| `猫` | 3 | 1 | 1 | 1 |
+| `😀` | 4 | 1 | 2 | 1 |
+| `é` as `U+00E9` | 2 | 1 | 1 | 1 |
+| `e` + `U+0301` | 3 | 2 | 2 | 1 |
+| `👩‍💻` | 11 | 3 | 5 | 1 |
+
+A limit of “20 characters” therefore needs a chosen unit: bytes, code points, or grapheme clusters. Byte truncation can break UTF-8 sequences; code point truncation can still split combining sequences and Emoji.
+
+## Why Python and JavaScript report different lengths
+
+Python’s `str` exposes code point-based length and indexing operations. JavaScript string length and ordinary indexing use UTF-16 code units.
+
+In Python:
+
+```python
+text = "👩‍💻"
+print(len(text))                   # 3
+print(len(text.encode("utf-8")))   # 11
+```
+
+In JavaScript:
+
+```javascript
+const text = "👩‍💻";
+console.log(text.length);                         // 5 UTF-16 code units
+console.log([...text].length);                    // 3 code points
+console.log(new TextEncoder().encode(text).length); // 11 UTF-8 bytes
+
+const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+console.log([...segmenter.segment(text)].length); // 1 grapheme cluster
+```
+
+The operations measure different units. For valid Unicode text, JavaScript string iteration can visit code points, while ordinary indexing still visits code units. A language’s string semantics also do not fully specify an engine’s internal memory representation.
+
+Fonts handle another layer: the same code point can have different shapes in different fonts, and multiple code points can participate in one glyph. A missing-glyph box calls for checking font support; an unusual display alone does not establish that the bytes were decoded incorrectly.
+
+## Comparing text that looks the same
+
+The two forms of `é` can render alike but compare differently as strings:
+
+```python
+import unicodedata
+
+a = "\u00e9"
+b = "e\u0301"
+
+print(a == b)  # False
+print(unicodedata.normalize("NFC", a) ==
+      unicodedata.normalize("NFC", b))  # True
+```
+
+Unicode normalization provides consistent representations for specific equivalence relations:
+
+| Form | Main process |
+| --- | --- |
+| NFD | Canonical decomposition and ordering |
+| NFC | Canonical decomposition and ordering, followed by composition |
+| NFKD | Compatibility decomposition and ordering |
+| NFKC | Compatibility decomposition and ordering, followed by composition |
+
+Canonical equivalence covers examples such as composed and decomposed accents. Compatibility equivalence additionally merges certain presentation distinctions. For example, NFKC maps fullwidth `Ａ` and circled `①` to `A` and `1`.
+
+The appropriate normalization depends on which distinctions a task should preserve. Search, deduplication, and storage of original text can have different requirements. Normalization, case folding, and collation also address different operations.
+
+Normalization can change code points and encoded bytes. Claims about recovering the original input must therefore specify whether such preprocessing occurred.
+
+## Where corrupted text comes from
+
+Files and networks require conversion between text and bytes:
+
+```text
+Text → encode → bytes → storage or transport → bytes → decode → text
+```
+
+Using different encoding and decoding conventions can produce incorrect text:
+
+```python
+original = "café"
+raw = original.encode("utf-8")
+wrong = raw.decode("latin-1")
+
+print(raw.hex(" ")) # 63 61 66 c3 a9
+print(wrong)        # cafÃ©
+```
+
+The final two UTF-8 bytes jointly represent é, but the other decoder interprets them separately. If no information was replaced or discarded, this particular transformation can be reversed:
+
+```python
+wrong = "cafÃ©"
+restored = wrong.encode("latin-1").decode("utf-8")
+print(restored)  # café
+```
+
+Discarded bytes and replaced characters generally cannot be reconstructed completely from the resulting text alone. Troubleshooting should therefore examine the original bytes and the actual conversion rules where possible.
+
+### Handling invalid bytes
+
+Consider 猫 with its final UTF-8 byte missing:
+
+```python
+raw = b"\xe7\x8c"
+
+try:
+    raw.decode("utf-8", errors="strict")
+except UnicodeDecodeError:
+    print("Incomplete UTF-8 sequence")
+
+print(raw.decode("utf-8", errors="replace")) # �
+print(repr(raw.decode("utf-8", errors="ignore"))) # ''
+```
+
+`strict` reports an error, `replace` inserts a replacement character, and `ignore` discards undecodable data. Each choice produces a different result.
+
+### Files, declarations, and escapes
+
+Specify the encoding when reading or writing text:
+
+```python
+from pathlib import Path
+
+path = Path("unicode-example.txt")
+path.write_text("猫😀", encoding="utf-8")
+
+print(path.read_bytes().hex(" ")) # e7 8c ab f0 9f 98 80
+print(path.read_text(encoding="utf-8")) # 猫😀
+```
+
+An HTML declaration such as `<meta charset="UTF-8">`, and relevant HTTP metadata, help a receiver select decoding rules. Editing a declaration by itself does not transcode the existing file.
+
+Source-code escapes operate at another layer:
+
+```python
+text = "\u732b"
+literal = r"\u732b"
+
+print(text, len(text))       # 猫 1
+print(literal, len(literal)) # \u732b 6
+```
+
+The first string contains 猫. The second contains a backslash, u, and four hexadecimal digit characters. Interpreting `\uXXXX` requires the surrounding language or data format: it may be escape syntax or ordinary literal text.
+
+## Connecting this to tokenization
+
+These units lead into the representation used by language models:
+
+```text
+Text → UTF-8 bytes → tokenizer pieces → token IDs
+```
+
+猫 has Unicode code point value 29483 and UTF-8 byte values 231, 140, and 171. Its representation in a tokenizer depends on the tokenizer’s vocabulary. Character standards, byte encodings, and model input representations each introduce their own units.
+
+A byte-level token can cover several characters or only some bytes of one character. Decoding usually combines token bytes before interpreting the complete text as UTF-8.
+
+These distinctions provide the background used in [Tokenization: From Text to Token Sequences](/blog/cs336-tokenization-en/). Specifying the unit makes it possible to explain why character, byte, and token counts differ.

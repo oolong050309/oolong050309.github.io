@@ -1,12 +1,12 @@
 ---
-title: "Tokenization：从文本到 Token 序列"
+title: "CS336 第一讲：Tokenization 与文本分词"
 slug: "cs336-tokenization"
-description: "从字符、字节和单词级编码出发，理解 BPE 如何构造词表，以及词表规模、序列长度与计算效率之间的取舍。"
+description: "斯坦福 CS336 第一讲 Tokenization（分词）学习笔记：从字符、UTF-8 字节和单词级编码出发，理解 BPE 词表、序列长度与计算效率的取舍。"
 publishedAt: "2026-11-16T12:00:00+08:00"
 category: "学习笔记"
 subcategory: "CS336"
 topic: "Tokenization"
-tags: ["CS336", "BPE", "Tokenizer", "大语言模型"]
+tags: ["CS336", "Tokenization", "分词", "BPE", "Tokenizer", "UTF-8", "Unicode", "大语言模型"]
 minutes: 12
 sample: false
 language: "zh-CN"
@@ -40,7 +40,7 @@ decode：token ID 序列 → 文本
 
 ## 字符和字节，为什么要分清？
 
-Unicode 为字符定义码点，UTF-8 则把有效的 Unicode 标量值编码成一到四个字节。码点和字节值虽然都可以写成整数，但表示的是不同东西。
+[Unicode](/blog/unicode/) 为字符定义码点，[UTF-8](/blog/unicode/#utf-8) 则把有效的 Unicode 标量值编码成一到四个字节。码点和字节值虽然都可以写成整数，但表示的是不同东西。
 
 ```python
 # ord() 返回字符的 Unicode 码点
@@ -80,7 +80,7 @@ list("猫".encode("utf-8"))   # [231, 140, 171]
 
 这只是其中一种规则；也可以保留 I'm 为整体。无论采用哪一种，切分之后仍要统计片段、建立词表，并把它们映射为整数编号。<strong>划分词边界和给片段编号，是相邻但不同的两步。</strong>
 
-这种方式的优势很直接。learning 有八个 ASCII 字节，按字节表示需要八个 token；如果词表中包含整个 learning，就只需一个。很多 token 对应人能够识别的词，序列也更紧凑。
+这种方式的优势很直接。learning 由八个 [ASCII](/blog/ascii/) 字符组成，在 UTF-8 中占八个字节。按字节表示需要八个 token；如果词表中包含整个 learning，就只需一个。很多 token 对应人能够识别的词，序列也更紧凑。
 
 问题在于，自然语言的词汇并不是一个预先封闭的集合。扩大语料、增加领域或加入新的语言，都会带来新的词形。更复杂的切分规则能够改善边界处理，却无法消除下面这些限制。
 

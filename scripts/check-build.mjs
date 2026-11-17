@@ -46,6 +46,18 @@ for (const [route, { html }] of pages) {
   assert.ok(!/\bnoindex\b/i.test(html), `production indexing is disabled on ${route}`);
   assert.ok(!/https?:\/\/(localhost|127\.0\.0\.1)(?:[:/]|\b)/i.test(html), `local URL published on ${route}`);
   const article = /^\/blog\/[^/]+\/$/.test(route);
+  const structuredBlocks = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)];
+  assert.equal(structuredBlocks.length, 1, `exactly one structured entity is required on ${route}`);
+  const structured = JSON.parse(structuredBlocks[0][1]);
+  const expectedType = article ? 'BlogPosting' : route === '/' ? 'WebSite' : route.startsWith('/blog/') ? 'CollectionPage' : 'WebPage';
+  assert.equal(structured['@type'], expectedType, `wrong structured entity on ${route}`);
+  assert.equal(structured.url, new URL(route, origin).href, `wrong structured URL on ${route}`);
+  if (route === '/') {
+    assert.equal(structured['@id'], `${origin}/#website`, 'the homepage must define the site entity');
+  } else if (!article) {
+    assert.equal(structured.isPartOf?.['@id'], `${origin}/#website`, `page must belong to the root site on ${route}`);
+  }
+  assert.ok(html.includes('property="og:url" content="' + new URL(route, origin).href + '"'), `wrong social URL on ${route}`);
   const widgets = [...html.matchAll(/<giscus-widget\b[^>]*>/g)];
   assert.equal(widgets.length, article ? 1 : 0, `wrong number of comment widgets on ${route}`);
   if (article) {
@@ -90,6 +102,19 @@ for (const [route, { html }] of pages) {
     links++;
   }
 }
+const searchIndex = JSON.parse(await readFile(path.join(output, 'search-index.json'), 'utf8'));
+assert.equal(searchIndex.revision, revision, 'search index and HTML must use the same revision');
+const indexedRoutes = [];
+for (const post of searchIndex.posts) {
+  const target = new URL(post.href, origin);
+  assert.equal(target.origin, origin, 'search results must remain on the site');
+  assert.ok(pages.has(target.pathname), `search result points to a missing page: ${post.href}`);
+  assert.ok(typeof post.searchText === 'string' && post.searchText.trim(), `missing article body in search index: ${post.href}`);
+  if (revision) assert.equal(target.searchParams.get('v'), revision, 'search results must preserve the release version');
+  indexedRoutes.push(target.pathname);
+}
+const articleRoutes = [...pages.keys()].filter(route => /^\/blog\/[^/]+\/$/.test(route));
+assert.deepEqual(indexedRoutes.sort(), articleRoutes.sort(), 'full-text search must cover every article and translation exactly once');
 const rss = await readFile(path.join(output, 'rss.xml'), 'utf8');
 const feedLinks = [...rss.matchAll(/<(?:link|guid)>([^<]+)<\/(?:link|guid)>/g)].map(match => match[1]);
 const articleURLs = [...pages.entries()].filter(([route, { html }]) => /^\/blog\/[^/]+\/$/.test(route) && !html.includes('data-translation-of=')).map(([route]) => new URL(route, origin).href);
@@ -120,4 +145,4 @@ assert.deepEqual([...sitemapURLs].sort(), expectedURLs.sort(), 'sitemap must inc
 const robots = await readFile(path.join(output, 'robots.txt'), 'utf8');
 assert.ok(robots.includes('Allow: /'));
 assert.ok(robots.split(/\r?\n/).includes(`Sitemap: ${origin}/sitemap-index.xml`), 'robots.txt must advertise the sitemap');
-console.log(`PASS: ${pages.size} production pages, ${links} local resources/anchors, ${commentPages} article comment widgets, ${sitemapURLs.size} sitemap URLs, canonical URLs, RSS links and crawler access.`);
+console.log(`PASS: ${pages.size} production pages, ${links} local resources/anchors, ${commentPages} article comment widgets, ${sitemapURLs.size} sitemap URLs, full-text search, structured data, canonical URLs, RSS links and crawler access.`);

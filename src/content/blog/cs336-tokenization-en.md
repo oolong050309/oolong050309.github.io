@@ -1,12 +1,12 @@
 ---
-title: "Tokenization: From Text to Token Sequences"
+title: "CS336 Lecture 1: Tokenization, From Text to Token Sequences"
 slug: "cs336-tokenization-en"
-description: "How language models represent text: characters, bytes, word-level encoding, BPE, and the trade-offs between vocabulary size and efficiency."
+description: "Stanford CS336 Lecture 1 tokenization notes: how language models represent text across characters, UTF-8 bytes, word-level encoding, and BPE."
 publishedAt: "2026-11-16T12:00:00+08:00"
 category: "学习笔记"
 subcategory: "CS336"
 topic: "Tokenization"
-tags: ["CS336", "BPE", "Tokenizer", "大语言模型"]
+tags: ["CS336", "Tokenization", "分词", "BPE", "Tokenizer", "UTF-8", "Unicode", "大语言模型"]
 minutes: 13
 sample: false
 language: "en"
@@ -41,7 +41,7 @@ For a pipeline that does not otherwise alter the input, encoding and then decodi
 
 ## Characters and bytes are different units
 
-Unicode defines code points. UTF-8 represents valid Unicode scalar values using one to four bytes. Both code points and byte values can be written as integers, but they represent different things.
+[Unicode](/blog/unicode-en/) defines code points. [UTF-8](/blog/unicode-en/#utf-8) represents valid Unicode scalar values using one to four bytes. Both code points and byte values can be written as integers, but they represent different things.
 
 ```python
 # ord() returns the character's Unicode code point
@@ -81,7 +81,7 @@ However, punctuation remains attached: NLP and NLP! could become separate vocabu
 
 This is only one choice; a different rule could keep I'm intact. Either way, the resulting pieces still need to be counted, collected into a vocabulary, and mapped to integer IDs. <strong>Finding word boundaries and assigning IDs are separate steps.</strong>
 
-The benefit is clear. The word learning occupies eight ASCII bytes. A byte tokenizer needs eight tokens, while a vocabulary containing the whole word needs only one. Many tokens are recognizable words, and sequences become more compact.
+The benefit is clear. The word learning consists of eight [ASCII](/blog/ascii-en/) characters and occupies eight UTF-8 bytes. A byte tokenizer needs eight tokens, while a vocabulary containing the whole word needs only one. Many tokens are recognizable words, and sequences become more compact.
 
 Natural-language vocabulary, however, is not a closed set. More data, new domains, and additional languages introduce new word forms. Better boundary rules help with segmentation, but they do not remove the following limitations.
 
