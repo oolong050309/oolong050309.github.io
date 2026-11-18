@@ -6,11 +6,18 @@ const output = path.resolve('dist');
 const origin = 'https://oolong050309.github.io';
 const revision = (process.env.PUBLIC_SITE_REVISION || '').slice(0, 12);
 const pages = new Map();
+const verificationFiles = new Set((await readdir('public')).filter(name => /^google[0-9a-f]+\.html$/.test(name)));
+for (const name of verificationFiles) {
+  const source = await readFile(path.join('public', name));
+  assert.equal(source.toString('utf8').trim(), `google-site-verification: ${name}`, `invalid Google verification file: ${name}`);
+  assert.deepEqual(await readFile(path.join(output, name)), source, `Google verification file must be published unchanged: ${name}`);
+}
 async function collect(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const file = path.join(directory, entry.name);
     if (entry.isDirectory()) await collect(file);
     else if (entry.name.endsWith('.html')) {
+      if (directory === output && verificationFiles.has(entry.name)) continue;
       const relative = path.relative(output, path.dirname(file)).split(path.sep).filter(Boolean).join('/');
       const route = relative ? `/${relative}/` : '/';
       const html = await readFile(file, 'utf8');
