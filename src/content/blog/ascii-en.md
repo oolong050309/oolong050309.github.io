@@ -74,9 +74,9 @@ CR and LF originally controlled horizontal and vertical movement. Unix text file
 
 `NUL`, `LF`, and `ESC` are abbreviated names. A specification, editor, or diagnostic tool might format them as `<LF>` or `[ESC]`. The brackets are a display convention that can vary between tools.
 
-Unicode provides dedicated characters for displaying these controls, including `␀` for NUL, `␉` for HT, `␊` for LF, `␍` for CR, and `␛` for ESC. These symbols have their own character values and can help an interface mark invisible characters in the input. A space can also be displayed as `␠` or `␣`. The [tokenization animation](/blog/cs336-tokenization-en/) uses `␣` while retaining ordinary spaces, with ASCII value 32, in the input.
+Unicode provides dedicated characters for displaying these controls, including `␀` for NUL, `␉` for HT, `␊` for LF, `␍` for CR, and `␛` for ESC. These symbols have their own character values and can help an interface mark invisible characters in the input. Symbols such as `␠` and `␣` can make a space visible.
 
-Some terminal tools use caret notation for control characters. For example, `^M` represents a carriage return.
+Some terminal tools use caret notation, displaying a control character as `^` followed by another symbol. For example, `^I` represents a tab (HT), `^J` a line feed (LF), and `^M` a carriage return (CR). Each pair on screen represents one control character in the original text.
 
 ### Backslash escapes in Python
 
@@ -118,7 +118,7 @@ print("\101", "\x41", "\u0041", "\U00000041", "\N{LATIN CAPITAL LETTER A}")
 print(ord("\x1b"), ord("\x7f"))  # 27 127, for ESC and DEL
 ```
 
-Escape syntax depends on the language or data format. For example, JSON allows the forward slash escape `\/`. Both `"/"` and `"\/"` parse to one forward slash in JSON. In a Python string, write `"/"` directly. The [Unicode article](/blog/unicode-en/#files-declarations-and-escapes) uses `\u` to distinguish source notation from the characters in a string.
+Escape syntax depends on the language or data format. For example, JSON allows the forward slash escape `\/`. Both `"/"` and `"\/"` parse to one forward slash in JSON. In a Python string, write `"/"` directly.
 
 ## Why 128 positions are insufficient
 
@@ -162,5 +162,3 @@ The data are identical in both reads. In GBK and UTF-8, `41 20` represents `A` f
 [Unicode](/blog/unicode-en/) supplies a shared system of characters and code points for a much wider repertoire, along with encoding forms such as UTF-8, UTF-16, and UTF-32. ASCII characters retain their original numerical values, and UTF-8 preserves their original encoded representations.
 
 Text consisting entirely of ASCII-range characters can therefore be read correctly as UTF-8. This provides an important compatibility foundation for existing text, protocols, and software.
-
-The Unicode article continues the same investigation with 猫 and Emoji: how they acquire code points and how they are encoded and stored. When returning to [Tokenization](/blog/cs336-tokenization-en/), these distinctions help separate character values and vocabulary IDs.
