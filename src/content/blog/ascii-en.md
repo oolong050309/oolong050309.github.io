@@ -1,80 +1,42 @@
 ---
 title: "ASCII: How Characters Become Numbers"
 slug: "ascii-en"
-description: "Understand bits, bytes, number bases, ASCII character values and control characters, and how ASCII leads to Unicode and modern text encoding."
+description: "Understand how ASCII assigns values to letters, digits, spaces, and control characters, why its repertoire is limited, and how it leads to Unicode."
 publishedAt: "2026-11-17T12:00:00+08:00"
 category: "学习笔记"
 topic: "Character encoding"
-tags: ["ASCII", "Character encoding", "Byte", "Hexadecimal", "Computer fundamentals"]
-minutes: 9
+tags: ["ASCII", "Character encoding", "Control characters", "Computer fundamentals"]
+minutes: 6
 sample: false
 language: "en"
 translationOf: "ascii"
 ---
 
-Press A on a keyboard, and a letter appears on the screen. Save it to a file, and the storage device records bits. How does a letter become a sequence of zeros and ones?
+ASCII stands for American Standard Code for Information Interchange. It assigns values to characters and control functions so that different systems can exchange text.
 
-We need a shared convention: assign values to characters and define how to represent those values. ASCII is one such convention. Its repertoire is small, which makes it a useful starting point for understanding the layers involved in text encoding.
-
-## Bits, bytes, and interpretation
-
-A bit has two possible values, conventionally written as 0 and 1. Throughout this article, a byte means the common modern unit of eight bits.
-
-Eight bits have 256 possible combinations. Interpreted as an unsigned integer, a byte can represent values from 0 to 255:
+For example, ASCII assigns 65 to the letter `A`, 97 to lowercase `a`, and 32 to a space. A sender represents characters using these values, and a receiver reconstructs them using the same table.
 
 ```text
-00000000 → 0
-00000001 → 1
-...
-11111111 → 255
+Character "A" → ASCII value 65 → character "A"
 ```
 
-The bits `01000001` carry no built-in label saying “letter.” Interpreted as an unsigned integer, their value is 65. Interpreted using ASCII, they represent A. Within a different data format, that byte might contribute to a color, a sound, or an instruction.
-
-Reading data therefore requires both the bytes and <strong>the rules for interpreting them</strong>. Character encoding provides conventions for representing text.
-
-## Why encoding examples use hexadecimal
-
-Binary exposes every bit, but long runs of zeros and ones are hard to read. Hexadecimal represents each group of four bits with one digit, using 0–9 and A–F for values 0–15.
-
-Split a byte into two groups:
-
-```text
-0100 0001
-  4    1
-```
-
-These three notations represent the same numerical value:
-
-| Notation | Base | Value |
-| --- | --- | ---: |
-| `01000001` | Binary | 65 |
-| `65` | Decimal | 65 |
-| `0x41` | Hexadecimal | 65 |
-
-The prefix `0x` commonly marks hexadecimal in programs. Changing the base changes how a value is written.
-
-When an example shows bytes such as `48 65 6C 6C 6F`, first check the notation. Those entries are hexadecimal byte values.
+**A shared convention determines how characters correspond to numbers.** ASCII provides one such character table.
 
 ## How ASCII assigns character values
 
-ASCII stands for American Standard Code for Information Interchange. It assigns values to characters and control functions so that different systems can exchange text.
-
-Standard ASCII uses seven bits and has 128 code positions, numbered 0–127. When stored in an eight-bit byte, the high bit can be set to zero. The value assigned to A is 65, represented by the byte `01000001`.
+Standard ASCII has 128 code positions, numbered 0–127, covering English letters, digits, punctuation, spaces, and control characters.
 
 Some familiar entries are:
 
-| Character or function | Decimal | Hexadecimal | Binary in an eight-bit byte |
-| --- | ---: | --- | --- |
-| Space, SP | 32 | `20` | `00100000` |
-| `0` | 48 | `30` | `00110000` |
-| `9` | 57 | `39` | `00111001` |
-| `A` | 65 | `41` | `01000001` |
-| `Z` | 90 | `5A` | `01011010` |
-| `a` | 97 | `61` | `01100001` |
-| `z` | 122 | `7A` | `01111010` |
-
-A sender encodes A as 65, and a receiver using the same convention reconstructs A.
+| Character or function | ASCII value |
+| --- | ---: |
+| Space, SP | 32 |
+| `0` | 48 |
+| `9` | 57 |
+| `A` | 65 |
+| `Z` | 90 |
+| `a` | 97 |
+| `z` | 122 |
 
 The letters and digits occupy consecutive ranges: uppercase letters at 65–90, lowercase letters at 97–122, and digit characters at 48–57. This explains many seemingly special constants in programs.
 
@@ -85,19 +47,19 @@ For example, the values for uppercase A and lowercase a differ by 32. That relat
 The integer 5 is a numerical value. The string `"5"` contains a digit character, whose ASCII value is 53:
 
 ```text
-Character "5" → ASCII value 53 → byte 00110101
+Character "5" → ASCII value 53
 ```
 
-Similarly, the text `"65"` contains two characters:
+Similarly, the text `"65"` contains two characters with two ASCII values:
 
 ```text
-"6" → 54 → 0x36
-"5" → 53 → 0x35
+"6" → 54
+"5" → 53
 
-"65" → 36 35
+"65" → [54, 53]
 ```
 
-A itself uses the single ASCII byte `41`. Although its character value is 65, storing A and storing the text `"65"` produce different byte sequences.
+The character `A` corresponds to the single value 65. Although its assigned value is 65, `A` and the text `"65"` are different content.
 
 This is why reading a number from text requires parsing: the program converts a sequence of digit characters into a numerical value.
 
@@ -133,26 +95,23 @@ ord("5")       # 53
 int("5")       # 5
 ```
 
-To inspect explicitly encoded ASCII bytes, select the encoding:
+You can also convert every character in a string to its value and reconstruct the text:
 
 ```python
 text = "Hello, A!"
-raw = text.encode("ascii")
+codes = [ord(char) for char in text]
 
-print(raw)                 # b'Hello, A!'
-print(list(raw))           # [72, 101, 108, 108, 111, 44, 32, 65, 33]
-print(raw.hex(" "))        # 48 65 6c 6c 6f 2c 20 41 21
-print(raw.decode("ascii")) # Hello, A!
+print(codes)                             # [72, 101, 108, 108, 111, 44, 32, 65, 33]
+print("".join(chr(code) for code in codes)) # Hello, A!
 ```
 
-`b'Hello, A!'` is Python’s display representation of a bytes object. Printable ASCII bytes can be shown using their corresponding characters. `list()` displays integer byte values, while `hex()` writes them in hexadecimal.
+Every character in this example belongs to ASCII, so the values returned by `ord()` match its ASCII values. Keeping the values in order lets us reconstruct the original text using the same mapping.
 
 Invisible characters can be inspected in the same way:
 
 ```python
-raw = "A B\n".encode("ascii")
-print(list(raw))       # [65, 32, 66, 10]
-print(raw.hex(" "))    # 41 20 42 0a
+text = "A B\n"
+print([ord(char) for char in text]) # [65, 32, 66, 10]
 ```
 
 Letters, spaces, and line breaks all contribute to the encoded data. Removing whitespace changes the original text.
@@ -170,16 +129,16 @@ except UnicodeEncodeError:
 
 The failure tells us that this particular encoding cannot represent the character.
 
-One way to expand the repertoire is to use the remaining values of an eight-bit byte. However, an extra 128 positions still cannot accommodate the world’s writing systems. Different systems also assigned different characters to the additional values. The name “extended ASCII” alone therefore does not identify one unique encoding table.
+One way to expand the repertoire is to extend the range to 0–255. However, an extra 128 positions still cannot accommodate the world’s writing systems. Different systems also assigned different characters to the additional values. The name “extended ASCII” alone therefore does not identify one unique encoding table.
 
-Regional encodings developed for different needs. Examples encountered in Chinese text processing include GB2312, GBK, GB18030, and Big5, each with its own history and rules. If the sender and receiver interpret the same bytes differently, the resulting text can be corrupted.
+Regional encodings developed for different needs. Examples encountered in Chinese text processing include GB2312, GBK, GB18030, and Big5, each with its own history and rules. If the sender and receiver interpret the same data differently, the resulting text can be corrupted.
 
 Expanding separate tables does not automatically solve exchange between systems. A shared character standard and suitable encoding forms are also needed.
 
 ## From ASCII to Unicode
 
-[Unicode](/blog/unicode-en/) supplies a shared system of characters and code points for a much wider repertoire, along with encoding forms such as UTF-8, UTF-16, and UTF-32. ASCII characters retain their original numerical values. In UTF-8, they also retain their original single-byte representations.
+[Unicode](/blog/unicode-en/) supplies a shared system of characters and code points for a much wider repertoire, along with encoding forms such as UTF-8, UTF-16, and UTF-32. ASCII characters retain their original numerical values, and UTF-8 preserves their original encoded representations.
 
-A text consisting entirely of ASCII-range characters therefore has identical bytes in ASCII and UTF-8. This provides an important compatibility foundation for existing text, protocols, and software.
+Text consisting entirely of ASCII-range characters can therefore be read correctly as UTF-8. This provides an important compatibility foundation for existing text, protocols, and software.
 
-The Unicode article continues the same investigation with 猫 and Emoji: how they acquire code points and how those values become multiple bytes. When returning to [Tokenization](/blog/cs336-tokenization-en/), these distinctions help separate character values, byte values, and vocabulary IDs.
+The Unicode article continues the same investigation with 猫 and Emoji: how they acquire code points and how they are encoded and stored. When returning to [Tokenization](/blog/cs336-tokenization-en/), these distinctions help separate character values and vocabulary IDs.
