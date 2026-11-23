@@ -1,7 +1,7 @@
 ---
 title: "ASCII: How Characters Become Numbers"
 slug: "ascii-en"
-description: "Read the ASCII character table, explore control characters and forms such as ^M, and see how Python escapes and Unicode relate to ASCII."
+description: "Read the ASCII character table, explore caret notation and Python escapes, and see how decoding GBK as UTF-8 can produce garbled text."
 publishedAt: "2026-11-17T12:00:00+08:00"
 category: "学习笔记"
 topic: "Character encoding"
@@ -45,26 +45,7 @@ Letters and digits each occupy consecutive ranges. If `A` is 65, then `B` is 66.
 
 For example, the values for uppercase A and lowercase a differ by 32. That relationship applies to these ASCII letters; general case conversion across writing systems requires more extensive rules.
 
-## The number 5 and the character “5”
-
-The integer 5 is a numerical value. The string `"5"` contains a digit character, whose ASCII value is 53:
-
-```text
-Character "5" → ASCII value 53
-```
-
-Similarly, the text `"65"` contains two characters with two ASCII values:
-
-```text
-"6" → 54
-"5" → 53
-
-"65" → [54, 53]
-```
-
-The character `A` corresponds to the single value 65. Although its assigned value is 65, `A` and the text `"65"` are different content.
-
-This is why reading a number from text requires parsing: the program converts a sequence of digit characters into a numerical value.
+The character `"5"` has ASCII value 53. In Python, `ord("5")` returns the character’s code point, 53, while `int("5")` parses the text as the integer 5. Unicode preserves the original values of ASCII characters, so `ord("A")` returns 65 and `chr(65)` gives `"A"`.
 
 ## Spaces and control characters are data
 
@@ -170,38 +151,6 @@ print(ord("\x1b"), ord("\x7f"))  # 27 127, for ESC and DEL
 
 Escape syntax depends on the language or data format. For example, JSON allows the forward slash escape `\/`. Both `"/"` and `"\/"` parse to one forward slash in JSON. In a Python string, write `"/"` directly. The [Unicode article](/blog/unicode-en/#files-declarations-and-escapes) uses `\u` to distinguish source notation from the characters in a string.
 
-## Inspecting ASCII with Python
-
-Python’s `ord()` returns a character’s Unicode code point, and `chr()` performs the reverse operation. Unicode’s first 128 code points preserve ASCII’s values, so these functions can also illustrate the ASCII range:
-
-```python
-ord("A")       # 65
-chr(65)        # 'A'
-ord("5")       # 53
-int("5")       # 5
-```
-
-You can also convert every character in a string to its value and reconstruct the text:
-
-```python
-text = "Hello, A!"
-codes = [ord(char) for char in text]
-
-print(codes)                             # [72, 101, 108, 108, 111, 44, 32, 65, 33]
-print("".join(chr(code) for code in codes)) # Hello, A!
-```
-
-Every character in this example belongs to ASCII, so the values returned by `ord()` match its ASCII values. Keeping the values in order lets us reconstruct the original text using the same mapping.
-
-Invisible characters can be inspected in the same way:
-
-```python
-text = "A B\n"
-print([ord(char) for char in text]) # [65, 32, 66, 10]
-```
-
-Letters, spaces, and line breaks all contribute to the encoded data. Removing whitespace changes the original text.
-
 ## Why 128 positions are insufficient
 
 ASCII represents the English letters used here, but it cannot directly represent Chinese characters, many accented letters, or numerous other writing systems:
@@ -215,11 +164,29 @@ except UnicodeEncodeError:
 
 The failure tells us that this particular encoding cannot represent the character.
 
-One way to expand the repertoire is to extend the range to 0–255. However, an extra 128 positions still cannot accommodate the world’s writing systems. Different systems also assigned different characters to the additional values. The name “extended ASCII” alone therefore does not identify one unique encoding table.
+## Extended ASCII, GBK, and regional encodings
 
-Regional encodings developed for different needs. Examples encountered in Chinese text processing include GB2312, GBK, GB18030, and Big5, each with its own history and rules. If the sender and receiver interpret the same data differently, the resulting text can be corrupted.
+ASCII needs seven bits for its 128 values. Some encodings use an eight-bit byte, keeping ASCII’s assignments in the lower half, `0x00`–`0x7F`, and using the upper half, `0x80`–`0xFF`, for additional characters. These schemes are often called “extended ASCII.” The meaning of an upper-half value depends on the encoding.
 
-Expanding separate tables does not automatically solve exchange between systems. A shared character standard and suitable encoding forms are also needed.
+Compare two European encodings. Both keep the values for `A` and space, but they assign different characters to `A1`. The table shows byte values in hexadecimal.
+
+| Encoding | `41` | `20` | `A1` |
+| --- | --- | --- | --- |
+| ISO-8859-1, used for several Western European languages | A | Space | ¡ (inverted exclamation mark) |
+| ISO-8859-2, used for several Central European languages | A | Space | Ą (a letter used in Polish and other languages) |
+
+There are thousands of Chinese characters, far more than the 256 values available in one byte. GBK extends GB2312, keeps the single-byte representation of ASCII characters, and uses pairs of bytes for Chinese characters. For example, `A` still uses `41` and space still uses `20`, while 猫 uses `C3 A8`. The later GB 18030 also introduced four-byte sequences. When reading older files, you may encounter Big5 for traditional Chinese, Shift_JIS for Japanese, and EUC-KR for Korean. Each has its own mapping. [Legacy encodings in the WHATWG Encoding Standard](https://encoding.spec.whatwg.org/#legacy-multi-byte-chinese-(simplified)-encodings)
+
+Using the wrong encoding can yield garbled text without raising an error. Here is what happens when Python decodes the same data twice.
+
+```python
+data = "A 猫".encode("gbk")
+print(data.hex(" "))        # 41 20 c3 a8
+print(data.decode("gbk"))   # A 猫
+print(data.decode("utf-8")) # A è
+```
+
+The data are identical in both reads. In GBK and UTF-8, `41 20` represents `A` followed by a space. In GBK, `C3 A8` represents 猫. It is also a valid UTF-8 sequence, where it represents `è`. When diagnosing garbled text, check which encoding was used to save the file even if the English text looks correct.
 
 ## From ASCII to Unicode
 
