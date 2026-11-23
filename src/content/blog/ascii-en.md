@@ -1,12 +1,12 @@
 ---
 title: "ASCII: How Characters Become Numbers"
 slug: "ascii-en"
-description: "Understand how ASCII assigns values to letters, digits, spaces, and control characters, why its repertoire is limited, and how it leads to Unicode."
+description: "Read the ASCII character table, explore control characters and forms such as ^M, and see how Python escapes and Unicode relate to ASCII."
 publishedAt: "2026-11-17T12:00:00+08:00"
 category: "学习笔记"
 topic: "Character encoding"
-tags: ["ASCII", "Character encoding", "Control characters", "Computer fundamentals"]
-minutes: 6
+tags: ["ASCII", "Character encoding", "Control characters", "Caret notation", "Escape sequences", "Computer fundamentals"]
+minutes: 10
 sample: false
 language: "en"
 translationOf: "ascii"
@@ -26,19 +26,22 @@ Character "A" → ASCII value 65 → character "A"
 
 Standard ASCII has 128 code positions, numbered 0–127, covering English letters, digits, punctuation, spaces, and control characters.
 
-Some familiar entries are:
+The table can be divided into these consecutive ranges.
 
-| Character or function | ASCII value |
-| --- | ---: |
-| Space, SP | 32 |
-| `0` | 48 |
-| `9` | 57 |
-| `A` | 65 |
-| `Z` | 90 |
-| `a` | 97 |
-| `z` | 122 |
+| ASCII value | Category | Examples |
+| --- | --- | --- |
+| 0–31 | Control characters | NUL is 0, LF is 10 |
+| 32 | Space | Abbreviated SP |
+| 33–47 | Punctuation and symbols | `!` is 33, `/` is 47 |
+| 48–57 | Digit characters | `0` is 48, `9` is 57 |
+| 58–64 | Punctuation and symbols | `:` is 58, `@` is 64 |
+| 65–90 | Uppercase letters | `A` is 65, `Z` is 90 |
+| 91–96 | Punctuation and symbols | `\` is 92, `^` is 94, `_` is 95 |
+| 97–122 | Lowercase letters | `a` is 97, `z` is 122 |
+| 123–126 | Punctuation and symbols | `{` is 123, `~` is 126 |
+| 127 | Delete control character | Abbreviated DEL |
 
-The letters and digits occupy consecutive ranges: uppercase letters at 65–90, lowercase letters at 97–122, and digit characters at 48–57. This explains many seemingly special constants in programs.
+Letters and digits each occupy consecutive ranges. If `A` is 65, then `B` is 66. Punctuation and symbols occupy several ranges between them. Fullwidth punctuation such as `，` and corner brackets such as `「」` fall outside ASCII.
 
 For example, the values for uppercase A and lowercase a differ by 32. That relationship applies to these ASCII letters; general case conversion across writing systems requires more extensive rules.
 
@@ -65,24 +68,107 @@ This is why reading a number from text requires parsing: the program converts a 
 
 ## Spaces and control characters are data
 
-ASCII includes more than visible letters. Values 0–31 and 127 identify control functions. Value 32 is space. The range 32–126 is commonly called printable ASCII; space occupies a position without drawing a visible mark.
+Values 32–126 are usually grouped as printable ASCII. Space (SP, 32) occupies a position and displays as a blank. Values 0–31 and 127 identify control characters. Many originally controlled printers, marked boundaries in records, or coordinated communication. What a control character does today depends on the application or protocol reading it.
 
-Several entries are especially useful:
+### Common control characters
 
-| Name | Decimal | Common notation | Meaning or use |
-| --- | ---: | --- | --- |
-| NUL | 0 | `\0` | Null character; some interfaces use it to terminate strings |
-| HT | 9 | `\t` | Horizontal tab |
-| LF | 10 | `\n` | Line feed |
-| CR | 13 | `\r` | Carriage return |
-| SP | 32 | Space | Separation and layout |
-| DEL | 127 | — | Delete control character |
+| ASCII value | Abbreviation | Meaning |
+| ---: | --- | --- |
+| 0 | NUL | Null character. C-style strings use it as a terminator. A Python string can retain it as a character |
+| 7 | BEL | Bell. A terminal may beep, flash, or stay quiet |
+| 8 | BS | Backspace. Originally moved the printing position one place left |
+| 9 | HT | Horizontal tab. Advances to the next tab stop, so its displayed width depends on the position and settings |
+| 10 | LF | Line feed. Originally moved the printing position down one line |
+| 11 | VT | Vertical tab. Advances to the next vertical tab stop |
+| 12 | FF | Form feed. Moves the printing position to the next page |
+| 13 | CR | Carriage return. Originally moved the printing position to the start of the current line |
+| 27 | ESC | Escape control character. Often begins a control sequence in terminal protocols |
+| 127 | DEL | Delete. Historically used to mark a canceled position on punched tape |
 
-Carriage return and line feed originated as different device actions. Text files commonly use LF alone or the sequence CR followed by LF, written `\r\n`. A displayed line break may therefore correspond to one or two control characters.
+Other control characters had their own uses. SOH, STX, ETX, and EOT mark boundaries around headers, text, or transmissions. ENQ, ACK, and NAK provide ways to make an inquiry, acknowledge it, or give a negative acknowledgment. FS, GS, RS, and US are separators for files, groups, records, and units. Modern formats have their own rules, so the protocol determines how each character is interpreted.
 
-In Python source, `"\n"` uses an escape to construct one line-feed character. By comparison, `"\\n"` contains a backslash followed by n. Source notation and the contents of the resulting string need to be examined separately.
+CR and LF originally controlled horizontal and vertical movement. Unix text files typically use LF alone, while Windows text files often use CR followed by LF. An editor can display either sequence as a single line break, even though they contain different numbers of characters.
 
-The same care applies to spaces. Our tokenization animation displays an existing space as `␣`. An actual ASCII space has value 32; the visible symbol `␣` is a different character used as a display marker. The underlying input retains its real spaces.
+## How to write invisible characters
+
+Carriage return has ASCII value 13. Documentation may write it as `CR` or `<CR>`, a terminal diagnostic tool may display `^M`, and an interface can mark it with `␍`. In Python, `"\r"` constructs a string containing one carriage return. The first forms help a person read the data. The last is syntax for constructing a string.
+
+### Abbreviations and visible symbols
+
+`NUL`, `LF`, and `ESC` are abbreviated names. A specification, editor, or diagnostic tool might format them as `<LF>` or `[ESC]`. The brackets are a display convention that can vary between tools.
+
+Unicode provides dedicated characters for displaying these controls, including `␀` for NUL, `␉` for HT, `␊` for LF, `␍` for CR, and `␛` for ESC. These symbols have their own character values and can help an interface mark invisible characters in the input. A space can also be displayed as `␠` or `␣`. The [tokenization animation](/blog/cs336-tokenization-en/) uses `␣` while retaining ordinary spaces, with ASCII value 32, in the input.
+
+### Caret notation
+
+`^` is called a caret. In caret notation, the caret and the symbol after it together represent one control character. For example, `^I` corresponds to horizontal tab (HT), `^J` to line feed (LF), and `^M` to carriage return (CR).
+
+For values 0–31, add 64 to the control character’s value and look up the character that follows the caret. Carriage return has value 13. Adding 64 gives 77, the value of `M`, which gives `^M`. DEL has a separate convention, `^?`.
+
+| Caret notation | ASCII value | Character |
+| --- | ---: | --- |
+| `^@` | 0 | NUL |
+| `^C` | 3 | ETX, end of text |
+| `^D` | 4 | EOT, end of transmission |
+| `^H` | 8 | BS, backspace |
+| `^I` | 9 | HT, horizontal tab |
+| `^J` | 10 | LF, line feed |
+| `^M` | 13 | CR, carriage return |
+| `^[` | 27 | ESC |
+| `^_` | 31 | US, unit separator |
+| `^?` | 127 | DEL |
+
+On macOS or Linux, use the following command to see the notation. `printf` writes the letter `A`, a carriage return, and a line feed. `cat -v` displays the carriage return as `^M` and leaves the final line break visible as a line break.
+
+```sh
+printf 'A\r\n' | cat -v
+# Outputs A^M followed by a line break
+```
+
+Typing `"^M"` in a normal Python string gives two characters, `^` and `M`. In a terminal, the `^C` you may see after pressing Ctrl+C is input echoed by the terminal. Under common terminal settings, Ctrl+C sends an interrupt signal to the foreground process group. Similarly, pressing Ctrl+D on an empty line in the terminal’s default line input mode normally lets a read operation report the end of input. That terminal behavior is distinct from storing the EOT character with value 4 in a file.
+
+### Backslash escapes in Python
+
+In an ordinary Python string, a backslash `\` (value 92) can introduce an escape sequence. A forward slash `/` (value 47) can appear directly, as in `"notes/ascii"`.
+
+| Syntax | Character | ASCII value |
+| --- | --- | ---: |
+| `\0` | NUL | 0 |
+| `\a` | BEL, bell | 7 |
+| `\b` | BS, backspace | 8 |
+| `\t` | HT, horizontal tab | 9 |
+| `\n` | LF, line feed | 10 |
+| `\v` | VT, vertical tab | 11 |
+| `\f` | FF, form feed | 12 |
+| `\r` | CR, carriage return | 13 |
+| `\"` | Double quote | 34 |
+| `\'` | Single quote | 39 |
+| `\\` | Backslash | 92 |
+
+`\"` and `\'` are useful when a string must include the same type of quote used around it. For example, `"She said \"hello\""` produces `She said "hello"`. You can also enclose the text in single quotes and write the inner double quotes directly.
+
+Compare these similar source forms. `len()` counts the characters in the resulting string, and `repr()` shows a representation suitable for inspection.
+
+```python
+print(len("\n"), repr("\n"))    # 1 '\n'
+print(len("\\n"), repr("\\n"))  # 2 '\\n'
+print(len(r"\n"), repr(r"\n"))  # 2 '\\n'
+print(len("\r\n"))              # 2
+print(len("^M"), len("\r"))     # 2 1
+```
+
+`"\n"` contains one actual line feed. In `"\\n"`, the first two backslashes produce a single backslash followed by the letter `n`. An `r` prefix creates a raw string, which preserves the two characters in a sequence such as `\n`. Therefore `r"\n"` and `"\\n"` have the same value. Raw strings are useful when several backslashes should be preserved, such as in the path `r"C:\new\test"`. A raw literal cannot end with an odd number of backslashes.
+
+You can also specify a character by value or Unicode name. Every form below produces `A`. `\x` takes exactly two digits, `\u` takes four, `\U` takes eight, and `\N{...}` takes a character name. An escape that begins with a digit, such as `\101`, is another form for specifying a character by value.
+
+```python
+print("\101", "\x41", "\u0041", "\U00000041", "\N{LATIN CAPITAL LETTER A}")
+# A A A A A
+
+print(ord("\x1b"), ord("\x7f"))  # 27 127, for ESC and DEL
+```
+
+Escape syntax depends on the language or data format. For example, JSON allows the forward slash escape `\/`. Both `"/"` and `"\/"` parse to one forward slash in JSON. In a Python string, write `"/"` directly. The [Unicode article](/blog/unicode-en/#files-declarations-and-escapes) uses `\u` to distinguish source notation from the characters in a string.
 
 ## Inspecting ASCII with Python
 
