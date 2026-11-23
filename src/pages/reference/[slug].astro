@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import * as chinese from '../../content/reference/caret-notation.md';
+import * as english from '../../content/reference/caret-notation-en.md';
+import { site } from '../../config/site';
+import { pageHref } from '../../lib/navigation';
+
+export function getStaticPaths() {
+  const notes = [
+    {
+      slug: 'caret-notation',
+      language: 'zh-CN',
+      backHref: '/blog/ascii/#缩写和可见符号',
+      backLabel: '返回 ASCII 正文',
+      note: chinese,
+    },
+    {
+      slug: 'caret-notation-en',
+      language: 'en',
+      backHref: '/blog/ascii-en/#abbreviations-and-visible-symbols',
+      backLabel: 'Back to the ASCII article',
+      note: english,
+    },
+  ] as const;
+
+  const alternates = notes.map(({ slug, language }) => ({
+    language,
+    href: `/reference/` + slug + `/`,
+  }));
+
+  return notes.map(({ slug, ...note }) => ({
+    params: { slug },
+    props: { ...note, alternates },
+  }));
+}
+
+const { note, language, backHref, backLabel, alternates } = Astro.props;
+const { Content, frontmatter: { title, description } } = note;
+const back = pageHref(backHref);
+---
+<BaseLayout title={title + ' · ' + site.name} {description} {language} {alternates}>
+  <div class="reference-page">
+    <div class="article-heading-row">
+      <a class="article-back" href={back}><Icon name="arrow" size={16} />{backLabel}</a>
+      <nav class="article-languages" aria-label={language === 'en' ? 'Page language' : '页面语言'}>
+        {alternates.map(alternate => (
+          <a href={pageHref(alternate.href)} lang={alternate.language} hreflang={alternate.language}
+            aria-current={alternate.language === language ? 'page' : undefined}>
+            {alternate.language === 'en' ? 'English' : '中文'}
+          </a>
+        ))}
+      </nav>
+    </div>
+    <PageHeader {title} {description} />
+    <div class="prose reference-body"><Content /></div>
+    <div class="article-end"><a href={back}>{backLabel}</a></div>
+  </div>
+</BaseLayout>
+
+<style>
+  .reference-page { max-width: 740px; margin-inline: auto; }
+  .reference-page :global(.page-heading) { padding-top: 0; padding-bottom: 32px; }
+  .reference-body { border-top: 1px solid var(--line); }
+</style>

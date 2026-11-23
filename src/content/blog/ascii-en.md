@@ -76,7 +76,7 @@ CR and LF originally controlled horizontal and vertical movement. Unix text file
 
 Unicode provides dedicated characters for displaying these controls, including `␀` for NUL, `␉` for HT, `␊` for LF, `␍` for CR, and `␛` for ESC. These symbols have their own character values and can help an interface mark invisible characters in the input. Symbols such as `␠` and `␣` can make a space visible.
 
-Some terminal tools use caret notation, displaying a control character as `^` followed by another symbol. For example, `^I` represents a tab (HT), `^J` a line feed (LF), and `^M` a carriage return (CR). Each pair on screen represents one control character in the original text.
+Some terminal tools use caret notation, displaying a control character as `^` followed by another symbol. For example, `^I` represents a tab (HT), `^J` a line feed (LF), and `^M` a carriage return (CR). Each pair on screen represents one control character in the original text. [See how caret notation works](/reference/caret-notation-en/).
 
 ### Backslash escapes
 
