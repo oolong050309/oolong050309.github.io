@@ -78,9 +78,11 @@ Unicode provides dedicated characters for displaying these controls, including `
 
 Some terminal tools use caret notation, displaying a control character as `^` followed by another symbol. For example, `^I` represents a tab (HT), `^J` a line feed (LF), and `^M` a carriage return (CR). Each pair on screen represents one control character in the original text.
 
-### Backslash escapes in Python
+### Backslash escapes
 
-In an ordinary Python string, a backslash `\` (value 92) can introduce an escape sequence. A forward slash `/` (value 47) can appear directly, as in `"notes/ascii"`.
+Languages such as C, JavaScript, and Python use a backslash `\` (value 92) to introduce escape sequences in strings. For example, `\n` stands for a line feed, `\t` for a tab, and `\\` for a single backslash. A forward slash `/` (value 47) can appear directly, as in `"notes/ascii"`.
+
+The table lists common forms. The meaning depends on the language. For example, `\a` represents a bell in C and Python and produces the letter `a` in a JavaScript string.
 
 | Syntax | Character | ASCII value |
 | --- | --- | ---: |
@@ -98,7 +100,7 @@ In an ordinary Python string, a backslash `\` (value 92) can introduce an escape
 
 `\"` and `\'` are useful when a string must include the same type of quote used around it. For example, `"She said \"hello\""` produces `She said "hello"`. You can also enclose the text in single quotes and write the inner double quotes directly.
 
-Compare these similar source forms. `len()` counts the characters in the resulting string, and `repr()` shows a representation suitable for inspection.
+Here is a comparison in Python. `len()` counts the characters in the resulting string, and `repr()` shows a representation suitable for inspection.
 
 ```python
 print(len("\n"), repr("\n"))    # 1 '\n'
@@ -109,7 +111,7 @@ print(len("\r\n"))              # 2
 
 `"\n"` contains one actual line feed. In `"\\n"`, the first two backslashes produce a single backslash followed by the letter `n`. An `r` prefix creates a raw string, which preserves the two characters in a sequence such as `\n`. Therefore `r"\n"` and `"\\n"` have the same value. Raw strings are useful when several backslashes should be preserved, such as in the path `r"C:\new\test"`. A raw literal cannot end with an odd number of backslashes.
 
-You can also specify a character by value or Unicode name. Every form below produces `A`. `\x` takes exactly two digits, `\u` takes four, `\U` takes eight, and `\N{...}` takes a character name. An escape that begins with a digit, such as `\101`, is another form for specifying a character by value.
+Python also lets you specify characters by value or Unicode name. Every form below produces `A`. `\x` takes exactly two digits, `\u` takes four, `\U` takes eight, and `\N{...}` takes a character name. An escape that begins with a digit, such as `\101`, is another form for specifying a character by value.
 
 ```python
 print("\101", "\x41", "\u0041", "\U00000041", "\N{LATIN CAPITAL LETTER A}")
@@ -118,7 +120,7 @@ print("\101", "\x41", "\u0041", "\U00000041", "\N{LATIN CAPITAL LETTER A}")
 print(ord("\x1b"), ord("\x7f"))  # 27 127, for ESC and DEL
 ```
 
-Escape syntax depends on the language or data format. For example, JSON allows the forward slash escape `\/`. Both `"/"` and `"\/"` parse to one forward slash in JSON. In a Python string, write `"/"` directly.
+JSON strings also support `\n`, `\t`, and `\\`, and allow the forward slash escape `\/`. Both `"/"` and `"\/"` parse to one forward slash.
 
 ## Why 128 positions are insufficient
 
