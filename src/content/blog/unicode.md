@@ -287,15 +287,14 @@ U+0065 + U+0301
 
 这两个序列可以有相同的显示效果，码点数量和字节序列却不同。
 
-Emoji 也会出现类似情况。`👩‍💻` 由三个码点构成：
+「怀孕的男人」`🫃` 本身只有一个码点。给它加上中等肤色修饰符，就得到由两个码点组成的 `🫃🏽`。
 
 ```text
-U+1F469  女性人物
-U+200D   零宽连接符 ZWJ
-U+1F4BB  电脑
+🫃   → U+1FAC3
+🫃🏽  → U+1FAC3 + U+1F3FD
 ```
 
-支持该序列的字体和排版环境可以把它显示为一个组合 Emoji。肤色修饰符、变体选择符和旗帜序列，也会让视觉效果与码点数量之间的关系更加丰富。
+支持这个组合的字体会把 `🫃🏽` 显示为一个带肤色的表情。按字素簇数，它仍然只有一个。
 
 Unicode 的<strong>扩展字素簇</strong>分段规则，为光标移动、文本截断等操作提供了接近用户感知的边界。它是文本处理规则，不等于字体最终画出的字形数，也不等于屏幕宽度。
 
@@ -308,7 +307,8 @@ Unicode 的<strong>扩展字素簇</strong>分段规则，为光标移动、文�
 | `😀` | 4 | 1 | 2 | 1 |
 | `é`，使用 `U+00E9` | 2 | 1 | 1 | 1 |
 | `e`＋`U+0301` | 3 | 2 | 2 | 1 |
-| `👩‍💻` | 11 | 3 | 5 | 1 |
+| `🫃` | 4 | 1 | 2 | 1 |
+| `🫃🏽` | 8 | 2 | 4 | 1 |
 
 因此，设计「最多输入 20 个字符」时，需要先决定限制的是字节、码点还是字素簇。按字节截断可能切断 UTF-8 序列；按码点截断也可能拆开组合字符或 Emoji。
 
@@ -319,18 +319,18 @@ Python 的 `str` 按 Unicode 码点提供常见的长度与索引操作；JavaSc
 Python 中：
 
 ```python
-text = "👩‍💻"
-print(len(text))                   # 3
-print(len(text.encode("utf-8")))   # 11
+text = "🫃"
+print(len(text))                   # 1
+print(len(text.encode("utf-8")))   # 4
 ```
 
 JavaScript 中：
 
 ```javascript
-const text = "👩‍💻";
-console.log(text.length);                         // 5 个 UTF-16 码元
-console.log([...text].length);                    // 3 个码点
-console.log(new TextEncoder().encode(text).length); // 11 个 UTF-8 字节
+const text = "🫃";
+console.log(text.length);                         // 2 个 UTF-16 码元
+console.log([...text].length);                    // 1 个码点
+console.log(new TextEncoder().encode(text).length); // 4 个 UTF-8 字节
 
 const segmenter = new Intl.Segmenter("zh", { granularity: "grapheme" });
 console.log([...segmenter.segment(text)].length); // 1 个字素簇
