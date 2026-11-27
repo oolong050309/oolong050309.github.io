@@ -187,15 +187,36 @@ print(raw.decode("utf-8")) # 猫
 
 ### Four bytes and decoding
 
-The code point of `😀` is `U+1F600`, requiring four UTF-8 bytes:
+`😀` has code point `U+1F600`, which falls in the four-byte range. First, write its value in binary:
 
 ```text
-U+1F600
-→ 11110000 10011111 10011000 10000000
-→ F0 9F 98 80
+0x1F600 → 1 1111 0110 0000 0000
 ```
 
-Decoding identifies the leading byte, reads the required continuation bytes, validates the sequence, and combines the payload bits to recover the code point.
+The four-byte pattern `11110xxx 10xxxxxx 10xxxxxx 10xxxxxx` has 3 + 6 + 6 + 6 payload bits. The binary value takes 17 bits, so pad it on the left with four zeros to fill all 21 slots. Working from the right, take three groups of six bits. That leaves three bits on the left:
+
+```text
+000 | 011111 | 011000 | 000000
+```
+
+Insert the groups from left to right. Prefix the first group with `11110` and each remaining group with `10`:
+
+```text
+11110 + 000    → 11110000
+10    + 011111 → 10011111
+10    + 011000 → 10011000
+10    + 000000 → 10000000
+```
+
+The result is:
+
+```text
+Binary:              11110000 10011111 10011000 10000000
+Hexadecimal:         F0 9F 98 80
+Decimal byte values: [240, 159, 152, 128]
+```
+
+To decode these bytes, read the `11110` prefix in the first byte. It signals a four-byte sequence. After validating the sequence, remove that prefix and the `10` prefix from each continuation byte. Joining the four payload groups in order recovers `U+1F600`, the code point for `😀`.
 
 The question “How many bytes does a Chinese character use?” therefore needs both an encoding and a specific character. Many common Han characters use three UTF-8 bytes; supplementary-plane Han characters use four.
 
