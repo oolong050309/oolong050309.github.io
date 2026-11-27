@@ -35,7 +35,7 @@ For simple English text, several of these quantities happen to coincide. Combini
 
 ## Writing a code point
 
-Unicode commonly writes a code point as `U+` followed by a hexadecimal value:
+Unicode writes a code point as `U+` followed by four to six hexadecimal digits. Pad shorter values on the left with zeros, as in `U+0041`. Keep longer values at their natural length, as in `U+1F600`. The padding is a convention for writing code points. The UTF-8 encoding of `A` still takes one byte.
 
 | Text | Code point | Decimal value |
 | --- | --- | ---: |
@@ -119,17 +119,27 @@ Each x carries a bit of the code point value. The fixed prefixes identify the st
 
 ### Start with ASCII
 
-The code point for uppercase `A` is written `U+0041`. The digits `0041` are hexadecimal, with two leading zeros for padding. Their value is 4 × 16 + 1 = 65. In the table above, 65 falls in the one-byte range `U+0000`–`U+007F` (0–127 in decimal), so we use the pattern `0xxxxxxx`.
-
-The leading `0` is fixed. It tells the decoder that this byte holds the entire character. The seven `x` slots hold the code point value. Since 65 = 64 + 1, its seven-bit binary representation is `1000001`.
+`A` has code point `U+0041`, which falls in the one-byte range. First, write its value in binary:
 
 ```text
-0 | xxxxxxx    The one-byte pattern
-0 | 1000001    Fill the seven payload bits with 65
-0100 0001      Read the eight bits in groups of four
+0x41 → 1000001
 ```
 
-Each group of four bits gives one hexadecimal digit. `0100` gives `4` and `0001` gives `1`, so the file contains a single byte with the value `0x41`. ASCII uses that same byte for `A`. This holds throughout the ASCII range, so valid ASCII text can be read as UTF-8 without changing any bytes.
+The one-byte pattern `0xxxxxxx` has seven payload bits. Insert those bits after the fixed prefix `0`:
+
+```text
+0 + 1000001 → 01000001
+```
+
+The result is:
+
+```text
+Binary:              01000001
+Hexadecimal:         41
+Decimal byte values: [65]
+```
+
+This is also the ASCII byte for `A`. The same holds throughout the ASCII range, so valid ASCII text can be read unchanged as UTF-8.
 
 ### Work through 猫 by hand
 
