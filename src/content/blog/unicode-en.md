@@ -54,11 +54,24 @@ for ch in ["A", "猫", "😀"]:
     print(ch, f"U+{ord(ch):04X}", unicodedata.name(ch))
 ```
 
-Unicode’s codespace ranges from `U+0000` to `U+10FFFF`. It is divided into 17 planes of 65,536 positions each. Plane 0 is the Basic Multilingual Plane, or BMP; the remaining planes are supplementary planes.
-
-The space contains assigned positions, unassigned positions, and positions with special purposes. Its capacity and the number of assigned characters are different quantities. `U+D800`–`U+DFFF` is the surrogate range. A <strong>Unicode scalar value</strong> is a code point value outside that range. Valid UTF encoding of individual values concerns these scalar values.
-
 Unicode preserves the first 128 ASCII values. Thus `ord("A")` returns 65, corresponding both to its ASCII value and to `U+0041`. The result of `ord("猫")` lies beyond ASCII’s repertoire.
+
+### How many code points are there, and how many characters?
+
+Every integer from `U+0000` through `U+10FFFF` is a code point, a position in the Unicode codespace. The space has 17 planes of 65,536 (2¹⁶) positions each. Plane 0, the Basic Multilingual Plane (BMP), runs from `U+0000` through `U+FFFF`. The remaining 16 planes are supplementary planes.
+
+Take Unicode 17.0 as an example. How many positions are available, and what are they used for? How many characters does this version count?
+
+| What we count | Number | What it includes |
+| --- | ---: | --- |
+| All code points | 1,114,112 | Every position in all 17 planes, counted once (17 × 65,536). |
+| Positions with a designated use | 299,448 | Positions whose use the standard has settled. For example, `U+732B` represents 猫, and `U+D800` has a role in UTF-16. |
+| Unassigned positions | 814,664 | Positions available for future assignment. For example, `U+0378` is still free in version 17.0. A later version could assign a character to it. |
+| Characters in the published count | 159,801 | Graphic characters, such as letters, Han characters, and punctuation, plus format characters such as the zero width joiner. |
+
+The designated and unassigned positions together fill the codespace (299,448 + 814,664 = 1,114,112). The last row counts a subset of the designated positions. 猫 contributes one to both counts. Controls, private-use code points, surrogates, and noncharacters all have designated uses and are excluded from the published figure of 159,801.
+
+**Surrogate code points** occupy the 2,048 positions from `U+D800` through `U+DFFF`. Why set aside this range? The code point for `😀`, `U+1F600`, exceeds `FFFF`, the largest value a single 16-bit code unit can hold. UTF-16 represents the face with two code units, `D83D DE00`. The first tells the decoder to read its partner so it can recover the original code point. Neither value represents a character on its own. Every code point outside those 2,048 surrogate positions is a **Unicode scalar value**.
 
 ## How Unicode and the UTFs fit together
 
