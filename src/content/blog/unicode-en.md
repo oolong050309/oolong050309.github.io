@@ -288,14 +288,14 @@ U+0065 + U+0301
 
 These sequences can look the same while having different code point counts and bytes.
 
-The pregnant man emoji `🫃` uses one code point. Adding a medium skin tone modifier gives `🫃🏽`, a sequence of two code points.
+`👩‍💻` contains three code points. The middle one, `U+200D`, is a zero width joiner (ZWJ) connecting the woman `👩` and the laptop `💻`. To add a medium skin tone, insert the modifier `🏽` (`U+1F3FD`) between the woman and the joiner.
 
 ```text
-🫃   → U+1FAC3
-🫃🏽  → U+1FAC3 + U+1F3FD
+👩‍💻  → U+1F469 + U+200D + U+1F4BB
+👩🏽‍💻  → U+1F469 + U+1F3FD + U+200D + U+1F4BB
 ```
 
-A font that supports the combination displays `🫃🏽` as one emoji with the specified skin tone. The sequence still counts as one grapheme cluster.
+Adding the skin tone changes the code point count from three to four. Each sequence is still one grapheme cluster and displays as one emoji on systems that support it.
 
 Unicode’s <strong>extended grapheme cluster</strong> rules provide boundaries useful for operations such as cursor movement and truncation. Grapheme clusters are text-processing units. Their count does not necessarily equal the glyph count or the width on screen.
 
@@ -308,8 +308,8 @@ The following quantities can all be correct:
 | `😀` | 4 | 1 | 2 | 1 |
 | `é` as `U+00E9` | 2 | 1 | 1 | 1 |
 | `e` + `U+0301` | 3 | 2 | 2 | 1 |
-| `🫃` | 4 | 1 | 2 | 1 |
-| `🫃🏽` | 8 | 2 | 4 | 1 |
+| `👩‍💻` | 11 | 3 | 5 | 1 |
+| `👩🏽‍💻` | 15 | 4 | 7 | 1 |
 
 A limit of “20 characters” therefore needs a chosen unit: bytes, code points, or grapheme clusters. Byte truncation can break UTF-8 sequences; code point truncation can still split combining sequences and Emoji.
 
@@ -320,21 +320,21 @@ Python’s `str` exposes code point-based length and indexing operations. JavaSc
 In Python:
 
 ```python
-text = "🫃"
-print(len(text))                   # 1
-print(len(text.encode("utf-8")))   # 4
+for text in ("👩‍💻", "👩🏽‍💻"):
+    print(len(text))                  # Code points: 3, then 4
+    print(len(text.encode("utf-8")))  # UTF-8 bytes: 11, then 15
 ```
 
 In JavaScript:
 
 ```javascript
-const text = "🫃";
-console.log(text.length);                         // 2 UTF-16 code units
-console.log([...text].length);                    // 1 code point
-console.log(new TextEncoder().encode(text).length); // 4 UTF-8 bytes
-
 const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
-console.log([...segmenter.segment(text)].length); // 1 grapheme cluster
+for (const text of ["👩‍💻", "👩🏽‍💻"]) {
+  console.log(text.length);                           // UTF-16 code units: 5, then 7
+  console.log([...text].length);                      // Code points: 3, then 4
+  console.log(new TextEncoder().encode(text).length); // UTF-8 bytes: 11, then 15
+  console.log([...segmenter.segment(text)].length);   // Grapheme clusters: 1 for each
+}
 ```
 
 The operations measure different units. For valid Unicode text, JavaScript string iteration can visit code points, while ordinary indexing still visits code units. A language’s string semantics also do not fully specify an engine’s internal memory representation.

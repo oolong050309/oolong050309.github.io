@@ -287,14 +287,14 @@ U+0065 + U+0301
 
 这两个序列可以有相同的显示效果，码点数量和字节序列却不同。
 
-「怀孕的男人」`🫃` 本身只有一个码点。给它加上中等肤色修饰符，就得到由两个码点组成的 `🫃🏽`。
+`👩‍💻` 由三个码点组成。中间的 `U+200D` 是零宽连接符（ZWJ），把人物 `👩` 和电脑 `💻` 连起来。要加上中等肤色，就把修饰符 `🏽`（`U+1F3FD`）放在人物和连接符之间。
 
 ```text
-🫃   → U+1FAC3
-🫃🏽  → U+1FAC3 + U+1F3FD
+👩‍💻  → U+1F469 + U+200D + U+1F4BB
+👩🏽‍💻  → U+1F469 + U+1F3FD + U+200D + U+1F4BB
 ```
 
-支持这个组合的字体会把 `🫃🏽` 显示为一个带肤色的表情。按字素簇数，它仍然只有一个。
+加上肤色后，码点从 3 个变成 4 个。两种写法各自仍是一个字素簇，在支持这些序列的环境中都显示为一个表情。
 
 Unicode 的<strong>扩展字素簇</strong>分段规则，为光标移动、文本截断等操作提供了接近用户感知的边界。它是文本处理规则，不等于字体最终画出的字形数，也不等于屏幕宽度。
 
@@ -307,8 +307,8 @@ Unicode 的<strong>扩展字素簇</strong>分段规则，为光标移动、文�
 | `😀` | 4 | 1 | 2 | 1 |
 | `é`，使用 `U+00E9` | 2 | 1 | 1 | 1 |
 | `e`＋`U+0301` | 3 | 2 | 2 | 1 |
-| `🫃` | 4 | 1 | 2 | 1 |
-| `🫃🏽` | 8 | 2 | 4 | 1 |
+| `👩‍💻` | 11 | 3 | 5 | 1 |
+| `👩🏽‍💻` | 15 | 4 | 7 | 1 |
 
 因此，设计「最多输入 20 个字符」时，需要先决定限制的是字节、码点还是字素簇。按字节截断可能切断 UTF-8 序列；按码点截断也可能拆开组合字符或 Emoji。
 
@@ -319,21 +319,21 @@ Python 的 `str` 按 Unicode 码点提供常见的长度与索引操作；JavaSc
 Python 中：
 
 ```python
-text = "🫃"
-print(len(text))                   # 1
-print(len(text.encode("utf-8")))   # 4
+for text in ("👩‍💻", "👩🏽‍💻"):
+    print(len(text))                  # 码点数：依次为 3、4
+    print(len(text.encode("utf-8")))  # UTF-8 字节数：依次为 11、15
 ```
 
 JavaScript 中：
 
 ```javascript
-const text = "🫃";
-console.log(text.length);                         // 2 个 UTF-16 码元
-console.log([...text].length);                    // 1 个码点
-console.log(new TextEncoder().encode(text).length); // 4 个 UTF-8 字节
-
 const segmenter = new Intl.Segmenter("zh", { granularity: "grapheme" });
-console.log([...segmenter.segment(text)].length); // 1 个字素簇
+for (const text of ["👩‍💻", "👩🏽‍💻"]) {
+  console.log(text.length);                           // UTF-16 码元数：5、7
+  console.log([...text].length);                      // 码点数：3、4
+  console.log(new TextEncoder().encode(text).length); // UTF-8 字节数：11、15
+  console.log([...segmenter.segment(text)].length);   // 字素簇数：1、1
+}
 ```
 
 这些结果采用了不同的计量单位。对于合法 Unicode 文本，JavaScript 的字符串迭代可以按码点访问，而普通索引仍然按码元访问。语言定义的操作语义，也不能直接当作引擎内部内存布局的说明。
