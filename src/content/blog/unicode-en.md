@@ -79,6 +79,22 @@ The rows add up to three useful totals.
 
 Why set aside the surrogate range? The code point for `😀`, `U+1F600`, exceeds `FFFF`, the largest value a single 16-bit code unit can hold. UTF-16 represents the face with two code units, `D83D DE00`. The first tells the decoder to read its partner so it can recover the original code point. Neither value represents a character on its own. Removing the surrogate range leaves two ranges of **Unicode scalar values**, `U+0000`–`U+D7FF` and `U+E000`–`U+10FFFF`.
 
+### Which plane and block contain a code point?
+
+In hexadecimal, the digits to the left of the last four give the **plane** number. The four digits of `U+732B` put 猫 in plane 0. Split `U+1F600` as `1 | F600` and you can see that 😀 is in plane 1. Here is how Unicode 17.0 uses the planes.
+
+| Plane | Code point range (inclusive) | Main use |
+| --- | --- | --- |
+| 0 (BMP) | `U+0000`–`U+FFFF` | The Basic Multilingual Plane includes Latin letters, common Han characters, and punctuation. |
+| 1 (SMP) | `U+10000`–`U+1FFFF` | The Supplementary Multilingual Plane includes historic scripts, musical symbols, and many emoji. |
+| 2 (SIP) | `U+20000`–`U+2FFFF` | The Supplementary Ideographic Plane holds several extensions of the CJK unified ideographs. |
+| 3 (TIP) | `U+30000`–`U+3FFFF` | The Tertiary Ideographic Plane holds further Han extensions. |
+| 4–13 | `U+40000`–`U+DFFFF` | No characters have been encoded in these planes as of version 17.0. |
+| 14 (SSP) | `U+E0000`–`U+EFFFF` | The Supplementary Special-purpose Plane contains tag characters and supplementary variation selectors. A variation selector can follow a character to select a glyph variant. |
+| 15 and 16 | `U+F0000`–`U+FFFFF`, `U+100000`–`U+10FFFF` | The Supplementary Private Use Area planes (SPUA-A and SPUA-B) each end with two noncharacters. |
+
+A **block** is a named, contiguous range within a plane that groups related characters. Blocks vary in size and can contain unassigned positions. For example, 猫 belongs to the CJK Unified Ideographs block (`U+4E00`–`U+9FFF`). The letter `A` is in the same plane, in a different block called Basic Latin (`U+0000`–`U+007F`).
+
 ## How Unicode and the UTFs fit together
 
 A code point still needs a representation when text is saved or transmitted. Unicode defines three common encoding forms:
@@ -257,7 +273,14 @@ UTF-16LE: 2B 73
 
 The code units of a surrogate pair remain in their logical order. Byte order determines the byte arrangement within each unit. Thus `D83D DE00` becomes `3D D8 00 DE` in UTF-16LE.
 
-A Byte Order Mark, or BOM, uses `U+FEFF` as an initial marker. Its bytes are `FE FF` in UTF-16BE and `FF FE` in UTF-16LE, allowing a reader to identify the byte order.
+A byte order mark (BOM) is `U+FEFF` used as a marker at the start of a text stream. When a file uses a BOM to signal byte order, the opening bytes depend on the encoding.
+
+| Encoding | Big-endian BOM (hex) | Little-endian BOM (hex) |
+| --- | --- | --- |
+| UTF-16 | `FE FF` | `FF FE` |
+| UTF-32 | `00 00 FE FF` | `FF FE 00 00` |
+
+UTF-32 represents the value `0x0000FEFF` in four bytes. Big-endian starts with the most significant byte, `00`. Little-endian starts with the least significant byte, `FF`, and writes the four bytes in the reverse order.
 
 UTF-8 can also carry the BOM bytes `EF BB BF`. Because a UTF-8 code unit is one byte, this marker acts as an encoding signature rather than choosing an endianness. Whether a format uses, accepts, or ignores a BOM depends on that format and its parser.
 
@@ -312,6 +335,19 @@ The last column counts grapheme clusters using Unicode’s default segmentation 
 | `👩🏽‍💻` | 15 | 4 | 7 | 1 |
 
 A limit of “20 characters” therefore needs a chosen unit: bytes, code points, or grapheme clusters. Byte truncation can break UTF-8 sequences; code point truncation can still split combining sequences and Emoji.
+
+### Fullwidth, halfwidth, and display width
+
+In a terminal that aligns text in columns, `A` typically occupies one column and the fullwidth letter `Ａ` occupies two. Each is one grapheme cluster. Comparing two forms of the same katakana letter also shows how display width relates to storage.
+
+| Text | Code point | East Asian Width | Typical terminal columns | UTF-8 bytes |
+| --- | --- | --- | ---: | ---: |
+| `A` | `U+0041` | Na (Narrow) | 1 | 1 |
+| `Ａ` | `U+FF21` | F (Fullwidth) | 2 | 3 |
+| `ｶ` | `U+FF76` | H (Halfwidth) | 1 | 3 |
+| `カ` | `U+30AB` | W (Wide) | 2 | 3 |
+
+Both forms of the katakana letter *ka* take three UTF-8 bytes, yet they can differ by one column. Unicode records width distinctions in the `East_Asian_Width` property. Its other two values are A (Ambiguous, as for `·`) and N (Neutral). Terminals apply their own rules when assigning column widths. On a web page with proportional type, the width in pixels also depends on the font and its size.
 
 ## Why Python and JavaScript report different lengths
 
@@ -433,6 +469,10 @@ print(path.read_text(encoding="utf-8")) # 猫😀
 ```
 
 An HTML declaration such as `<meta charset="UTF-8">`, and relevant HTTP metadata, help a receiver select decoding rules. Editing a declaration by itself does not transcode the existing file.
+
+HTML and XML also allow **character references** in text. To display “猫 & 狗”, for example, a page can use `<p>&#x732B; &amp; 狗</p>`. The browser first decodes the source bytes using the file’s encoding. As it parses the markup, it resolves `&#x732B;` to 猫 and `&amp;` to the ampersand character.
+
+A numeric reference gives a Unicode code point. Both `&#29483;` (decimal) and `&#x732B;` (hexadecimal) produce 猫. A reference can also use a name, as in `&lt;` for the less-than sign. The five predefined XML entities are `&amp;`, `&lt;`, `&gt;`, `&quot;`, and `&apos;`. HTML defines more names, including `&nbsp;` for a nonbreaking space. In XML, `&#xA0;` gives that same space without an entity declaration.
 
 Source-code escapes operate at another layer:
 

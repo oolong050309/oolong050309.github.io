@@ -78,6 +78,8 @@ Unicode provides dedicated characters for displaying these controls, including `
 
 Some terminal tools use caret notation, displaying a control character as `^` followed by another symbol. For example, `^I` represents a tab (HT), `^J` a line feed (LF), and `^M` a carriage return (CR). Each pair on screen represents one control character in the original text. [See how caret notation works](/reference/caret-notation-en/).
 
+To match the line feed that a terminal might display as `^J`, write `/\cJ/` in a JavaScript regular expression. After `\c`, an ASCII letter selects the control code given by its ASCII value modulo 32. For `J`, 74 modulo 32 is 10, the value of LF. So `/\cJ/.test("\n")` returns `true`, while `/\cJ/.test("^J")` returns `false`. The same rule gives `\cI` for a tab and `\cM` for a carriage return.
+
 ### Backslash escapes
 
 Languages such as C, JavaScript, and Python use a backslash `\` (value 92) to introduce escape sequences in strings. For example, `\n` stands for a line feed, `\t` for a tab, and `\\` for a single backslash. A forward slash `/` (value 47) can appear directly, as in `"notes/ascii"`.
