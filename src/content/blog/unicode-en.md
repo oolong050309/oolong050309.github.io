@@ -94,11 +94,11 @@ The same 猫 can consequently have different byte representations:
 | Encoding scheme | Bytes, without a BOM |
 | --- | --- |
 | UTF-8 | `E7 8C AB` |
-| UTF-16BE | `73 2B` |
-| UTF-16LE | `2B 73` |
-| UTF-32BE | `00 00 73 2B` |
+| UTF-16BE (big-endian) | `73 2B` |
+| UTF-16LE (little-endian) | `2B 73` |
+| UTF-32BE (big-endian) | `00 00 73 2B` |
 
-Decoding each representation with its corresponding rules recovers the same code point.
+Decoding each representation with its corresponding rules recovers the same code point. The later section on [byte order and BOM](#byte-order-and-bom) explains how big-endian and little-endian encodings order the bytes.
 
 ## UTF-8
 
