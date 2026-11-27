@@ -299,7 +299,7 @@ Adding the skin tone changes the code point count from three to four. Each seque
 
 Unicode’s <strong>extended grapheme cluster</strong> rules provide boundaries useful for operations such as cursor movement and truncation. Grapheme clusters are text-processing units. Their count does not necessarily equal the glyph count or the width on screen.
 
-The following quantities can all be correct:
+The last column counts grapheme clusters using Unicode’s default segmentation rules. The five code points in `A👩🏽‍💻` are the letter `A`, the woman `👩`, the skin tone modifier `🏽`, the zero width joiner, and the laptop `💻`, in that order. Under these rules, `A` forms one cluster and the other four code points form the emoji cluster `👩🏽‍💻`, giving two clusters in total.
 
 | Text | UTF-8 bytes | Code points | UTF-16 code units | Default extended grapheme clusters |
 | --- | ---: | ---: | ---: | ---: |
