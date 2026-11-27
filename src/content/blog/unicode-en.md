@@ -449,6 +449,19 @@ GBK     EF BF│BD EF│BF BD   → 锟 斤 拷
 
 In GBK, `EF BF` maps to 锟, `BD EF` to 斤, and `BF BD` to 拷. The middle character, 斤, spans the original boundary. Its `BD` ends the first `�`, and its `EF` starts the second. Encoding 锟斤拷 as GBK and reading those bytes as UTF-8 recovers `��`. The first replacement already erased the information needed to identify the original invalid bytes.
 
+### Why 烫烫烫 can appear in debug output
+
+In some Visual C++ debug configurations, the compiler fills stack memory with `0xCC` to help check how a program uses local variables. Suppose a program writes a short message into a character buffer on the stack, then sends the buffer’s entire capacity to the terminal. The output can include some of the `CC` bytes left after the message.
+
+In GBK, the byte pair `CC CC` maps to the Chinese character 烫. A terminal decoding six consecutive `CC` bytes as GBK therefore displays 烫 three times.
+
+```text
+CC CC │ CC CC │ CC CC
+  烫      烫      烫
+```
+
+This path involves no replacement character (`�`). The debug fill explains the repeated bytes, and the GBK mapping explains which character appears.
+
 ### Handling invalid bytes
 
 Consider 猫 with its final UTF-8 byte missing:
