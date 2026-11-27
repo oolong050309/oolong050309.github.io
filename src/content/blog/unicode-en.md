@@ -113,6 +113,10 @@ UTF-8 uses different sequence lengths for different scalar-value ranges. The fir
 
 Each x carries a bit of the code point value. The fixed prefixes identify the structure. Valid encoding also requires the appropriate range and shortest representation, so the prefixes alone are insufficient for validation.
 
+**Range** determines which values can be encoded. UTF-8 can represent only Unicode scalar values. For example, `U+D800` is a surrogate code point, and `0x110000` exceeds the highest code point, `U+10FFFF`. Neither has a valid UTF-8 encoding.
+
+**Shortest representation** determines how many bytes a value takes. The code point for `A` is 65, or `1000001` in binary. It fits in the one-byte pattern `0xxxxxxx`, giving `01000001` (hex `41`). Suppose we force the same value into the two-byte pattern `110xxxxx 10xxxxxx`. The six slots on the right take `000001`. The remaining `1` is padded to `00001` for the five slots on the left. The result is `11000001 10000001` (`C1 81`). The prefixes fit the pattern, but 65 needs only one byte. A UTF-8 decoder must treat `C1 81` as an invalid **overlong encoding**.
+
 ### Start with ASCII
 
 A has code point `U+0041` and uses one byte:
