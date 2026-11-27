@@ -60,18 +60,24 @@ Unicode preserves the first 128 ASCII values. Thus `ord("A")` returns 65, corres
 
 Every integer from `U+0000` through `U+10FFFF` is a code point, a position in the Unicode codespace. The space has 17 planes of 65,536 (2¹⁶) positions each. Plane 0, the Basic Multilingual Plane (BMP), runs from `U+0000` through `U+FFFF`. The remaining 16 planes are supplementary planes.
 
-Take Unicode 17.0 as an example. How many positions are available, and what are they used for? How many characters does this version count?
+In Unicode 17.0, each of the **1,114,112 positions** falls into one of the six groups below. All ranges include both endpoints.
 
-| What we count | Number | What it includes |
+| Use | Positions | Where they occur |
 | --- | ---: | --- |
-| All code points | 1,114,112 | Every position in all 17 planes, counted once (17 × 65,536). |
-| Positions with a designated use | 299,448 | Positions whose use the standard has settled. For example, `U+732B` represents 猫, and `U+D800` has a role in UTF-16. |
-| Unassigned positions | 814,664 | Positions available for future assignment. For example, `U+0378` is still free in version 17.0. A later version could assign a character to it. |
-| Characters in the published count | 159,801 | Graphic characters, such as letters, Han characters, and punctuation, plus format characters such as the zero width joiner. |
+| Graphic and format characters (the published character count) | 159,801 | Spread across many ranges. Examples include uppercase Latin letters at `U+0041`–`U+005A`, 猫 at `U+732B`, and the zero width joiner at `U+200D`. |
+| Controls | 65 | `U+0000`–`U+001F` and `U+007F`–`U+009F`. Line feed is `U+000A`. |
+| Private-use code points | 137,468 | `U+E000`–`U+F8FF`, `U+F0000`–`U+FFFFD`, and `U+100000`–`U+10FFFD`. Users agree on what a given position means. |
+| Surrogate code points | 2,048 | `U+D800`–`U+DBFF` supplies the first code unit in a UTF-16 surrogate pair, and `U+DC00`–`U+DFFF` supplies the second. |
+| Noncharacters | 66 | The 32 positions from `U+FDD0` through `U+FDEF`, plus the last two positions in each of the 17 planes (such as `U+FFFE` and `U+FFFF`). All 32 + 17 × 2 positions are permanently set aside for internal use. |
+| Unassigned positions | 814,664 | The gaps between the ranges covered by the first five rows. For example, `U+0378`–`U+0379` are available for future assignment in version 17.0. |
 
-The designated and unassigned positions together fill the codespace (299,448 + 814,664 = 1,114,112). The last row counts a subset of the designated positions. 猫 contributes one to both counts. Controls, private-use code points, surrogates, and noncharacters all have designated uses and are excluded from the published figure of 159,801.
+The rows add up to three useful totals.
 
-**Surrogate code points** occupy the 2,048 positions from `U+D800` through `U+DFFF`. Why set aside this range? The code point for `😀`, `U+1F600`, exceeds `FFFF`, the largest value a single 16-bit code unit can hold. UTF-16 represents the face with two code units, `D83D DE00`. The first tells the decoder to read its partner so it can recover the original code point. Neither value represents a character on its own. Every code point outside those 2,048 surrogate positions is a **Unicode scalar value**.
+- **Assigned characters** occupy the first three rows. Adding controls and private-use code points to the published character count gives 159,801 + 65 + 137,468 = **297,334**.
+- **Designated code points** occupy the first five rows. Adding surrogates and noncharacters to the assigned characters gives 297,334 + 2,048 + 66 = **299,448**. For example, `U+FFFF` already has a permanent use as a noncharacter, so it will never be allocated to a new character.
+- **The entire codespace** spans all six rows. The 299,448 designated positions and 814,664 unassigned positions add up to **1,114,112**.
+
+Why set aside the surrogate range? The code point for `😀`, `U+1F600`, exceeds `FFFF`, the largest value a single 16-bit code unit can hold. UTF-16 represents the face with two code units, `D83D DE00`. The first tells the decoder to read its partner so it can recover the original code point. Neither value represents a character on its own. Removing the surrogate range leaves two ranges of **Unicode scalar values**, `U+0000`–`U+D7FF` and `U+E000`–`U+10FFFF`.
 
 ## How Unicode and the UTFs fit together
 
