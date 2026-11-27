@@ -119,13 +119,17 @@ Each x carries a bit of the code point value. The fixed prefixes identify the st
 
 ### Start with ASCII
 
-A has code point `U+0041` and uses one byte:
+The code point for uppercase `A` is written `U+0041`. The digits `0041` are hexadecimal, with two leading zeros for padding. Their value is 4 × 16 + 1 = 65. In the table above, 65 falls in the one-byte range `U+0000`–`U+007F` (0–127 in decimal), so we use the pattern `0xxxxxxx`.
+
+The leading `0` is fixed. It tells the decoder that this byte holds the entire character. The seven `x` slots hold the code point value. Since 65 = 64 + 1, its seven-bit binary representation is `1000001`.
 
 ```text
-U+0041 → 01000001 → 41
+0 | xxxxxxx    The one-byte pattern
+0 | 1000001    Fill the seven payload bits with 65
+0100 0001      Read the eight bits in groups of four
 ```
 
-This is exactly its ASCII byte. Every ASCII-range character has the same property: a valid ASCII byte sequence is also valid UTF-8 for the same text.
+Each group of four bits gives one hexadecimal digit. `0100` gives `4` and `0001` gives `1`, so the file contains a single byte with the value `0x41`. ASCII uses that same byte for `A`. This holds throughout the ASCII range, so valid ASCII text can be read as UTF-8 without changing any bytes.
 
 ### Work through 猫 by hand
 
