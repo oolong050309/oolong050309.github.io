@@ -436,6 +436,19 @@ print(restored)  # café
 
 Discarded bytes and replaced characters generally cannot be reconstructed completely from the resulting text alone. Troubleshooting should therefore examine the original bytes and the actual conversion rules where possible.
 
+### How two replacement characters turn into 锟斤拷
+
+Suppose a file contains the bytes `FF FF`. Each `FF` is invalid in UTF-8. A decoder using replacement on error emits one replacement character `�` (`U+FFFD`) for each of these bytes, giving `��`. Saving that text as UTF-8 writes three bytes for each `�`, namely `EF BF BD`.
+
+If the next program opens the file as GBK, it groups the same six bytes differently. The vertical bars mark the character boundaries.
+
+```text
+UTF-8   EF BF BD│EF BF BD   → � �
+GBK     EF BF│BD EF│BF BD   → 锟 斤 拷
+```
+
+In GBK, `EF BF` maps to 锟, `BD EF` to 斤, and `BF BD` to 拷. The middle character, 斤, spans the original boundary. Its `BD` ends the first `�`, and its `EF` starts the second. Encoding 锟斤拷 as GBK and reading those bytes as UTF-8 recovers `��`. The first replacement already erased the information needed to identify the original invalid bytes.
+
 ### Handling invalid bytes
 
 Consider 猫 with its final UTF-8 byte missing:
