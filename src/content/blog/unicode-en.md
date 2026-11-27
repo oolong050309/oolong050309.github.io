@@ -498,17 +498,3 @@ print(literal, len(literal)) # \u732b 6
 ```
 
 The first string contains 猫. The second contains a backslash, u, and four hexadecimal digit characters. Interpreting `\uXXXX` requires the surrounding language or data format: it may be escape syntax or ordinary literal text.
-
-## Connecting this to tokenization
-
-These units lead into the representation used by language models:
-
-```text
-Text → UTF-8 bytes → tokenizer pieces → token IDs
-```
-
-猫 has Unicode code point value 29483 and UTF-8 byte values 231, 140, and 171. Its representation in a tokenizer depends on the tokenizer’s vocabulary. Character standards, byte encodings, and model input representations each introduce their own units.
-
-A byte-level token can cover several characters or only some bytes of one character. Decoding usually combines token bytes before interpreting the complete text as UTF-8.
-
-These distinctions provide the background used in [Tokenization: From Text to Token Sequences](/blog/cs336-tokenization-en/). Specifying the unit makes it possible to explain why character, byte, and token counts differ.
