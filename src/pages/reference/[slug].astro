@@ -2,43 +2,41 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Icon from '../../components/Icon.astro';
 import PageHeader from '../../components/PageHeader.astro';
-import * as chinese from '../../content/reference/caret-notation.md';
-import * as english from '../../content/reference/caret-notation-en.md';
+import * as caretZh from '../../content/reference/caret-notation.md';
+import * as caretEn from '../../content/reference/caret-notation-en.md';
+import * as encodingsZh from '../../content/reference/legacy-encodings.md';
+import * as encodingsEn from '../../content/reference/legacy-encodings-en.md';
 import { site } from '../../config/site';
 import { pageHref } from '../../lib/navigation';
 
 export function getStaticPaths() {
   const notes = [
-    {
-      slug: 'caret-notation',
-      language: 'zh-CN',
-      backHref: '/blog/ascii/#缩写和可见符号',
-      backLabel: '返回 ASCII 正文',
-      note: chinese,
-    },
-    {
-      slug: 'caret-notation-en',
-      language: 'en',
-      backHref: '/blog/ascii-en/#abbreviations-and-visible-symbols',
-      backLabel: 'Back to the ASCII article',
-      note: english,
-    },
+    [
+      { slug: 'caret-notation', language: 'zh-CN', backHref: '/blog/ascii/#缩写和可见符号', note: caretZh },
+      { slug: 'caret-notation-en', language: 'en', backHref: '/blog/ascii-en/#abbreviations-and-visible-symbols', note: caretEn },
+    ],
+    [
+      { slug: 'legacy-encodings', language: 'zh-CN', backHref: '/blog/ascii/#扩展-asciigbk-与多国标准', note: encodingsZh },
+      { slug: 'legacy-encodings-en', language: 'en', backHref: '/blog/ascii-en/#extended-ascii-gbk-and-regional-encodings', note: encodingsEn },
+    ],
   ] as const;
 
-  const alternates = notes.map(({ slug, language }) => ({
-    language,
-    href: `/reference/` + slug + `/`,
-  }));
-
-  return notes.map(({ slug, ...note }) => ({
-    params: { slug },
-    props: { ...note, alternates },
-  }));
+  return notes.flatMap(translations => {
+    const alternates = translations.map(({ slug, language }) => ({
+      language,
+      href: '/reference/' + slug + '/',
+    }));
+    return translations.map(({ slug, ...variant }) => ({
+      params: { slug },
+      props: { ...variant, alternates },
+    }));
+  });
 }
 
-const { note, language, backHref, backLabel, alternates } = Astro.props;
+const { note, language, backHref, alternates } = Astro.props;
 const { Content, frontmatter: { title, description } } = note;
 const back = pageHref(backHref);
+const backLabel = language === 'en' ? 'Back to the ASCII article' : '返回 ASCII 正文';
 ---
 <BaseLayout title={title + ' · ' + site.name} {description} {language} {alternates}>
   <div class="reference-page">

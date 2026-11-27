@@ -440,7 +440,7 @@ Discarded bytes and replaced characters generally cannot be reconstructed comple
 
 Suppose a file contains the bytes `FF FF`. Each `FF` is invalid in UTF-8. A decoder using replacement on error emits one replacement character `�` (`U+FFFD`) for each of these bytes, giving `��`. Saving that text as UTF-8 writes three bytes for each `�`, namely `EF BF BD`.
 
-If the next program opens the file as GBK, it groups the same six bytes differently. The vertical bars mark the character boundaries.
+If the next program opens the file as [GBK](/reference/legacy-encodings-en/#gbk-and-other-regional-encodings), it groups the same six bytes differently. The vertical bars mark the character boundaries.
 
 ```text
 UTF-8   EF BF BD│EF BF BD   → � �
